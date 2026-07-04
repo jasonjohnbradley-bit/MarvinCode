@@ -16,6 +16,8 @@ Every upstream (Microsoft) file this fork modifies is listed here, with how to r
 | 1 | `product.json` | MarvinCode branding: nameShort/nameLong, applicationName, dataFolderName, sharedDataFolderName, server/tunnel names, win32* identity (fresh GUIDs), darwinBundleIdentifier, urlProtocol | On conflict, keep our values for all identity fields; take upstream for everything else (builtInExtensions versions etc.) |
 | 2 | `build/gulpfile.extensions.ts` | Added `extensions/kanban/tsconfig.json` (and later `extensions/agent-runner/tsconfig.json`) to the hardcoded `compilations` array | Re-add the fork lines to the array, alphabetical position is cosmetic |
 | 3 | `.eslint-allowed-javascript-files` | Added `extensions/kanban/media/board.js` (hand-written webview script, same pattern as media-preview) | Re-add the one line, alphabetical position is cosmetic |
+| 4 | `src/vs/code/electron-main/app.ts` | agentGraph: service registration (`services.set`) + IPC channel registration, both in `// FORK:agentGraph` blocks | Re-add the two marked blocks next to the Encryption service/channel lines |
+| 5 | `src/vs/workbench/workbench.desktop.main.ts` | One side-effect import of `contrib/agentGraph` in a `// FORK:agentGraph` block | Re-add the marked import at the end of the contrib imports |
 
 ## Merge procedure (monthly)
 

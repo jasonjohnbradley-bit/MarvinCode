@@ -36,6 +36,10 @@ import { DiagnosticsMainService, IDiagnosticsMainService } from '../../platform/
 import { DialogMainService, IDialogMainService } from '../../platform/dialogs/electron-main/dialogMainService.js';
 import { IEncryptionMainService } from '../../platform/encryption/common/encryptionService.js';
 import { EncryptionMainService } from '../../platform/encryption/electron-main/encryptionMainService.js';
+// FORK:agentGraph begin
+import { AGENT_GRAPH_CHANNEL } from '../../platform/agentGraph/common/agentGraph.js';
+import { AgentGraphMainService, IAgentGraphMainService } from '../../platform/agentGraph/electron-main/agentGraphMainService.js';
+// FORK:agentGraph end
 import { ipcBrowserViewChannelName } from '../../platform/browserView/common/browserView.js';
 import { ipcBrowserViewGroupChannelName } from '../../platform/browserView/common/browserViewGroup.js';
 import { BrowserViewMainService, IBrowserViewMainService } from '../../platform/browserView/electron-main/browserViewMainService.js';
@@ -1120,6 +1124,10 @@ export class CodeApplication extends Disposable {
 		// Encryption
 		services.set(IEncryptionMainService, new SyncDescriptor(EncryptionMainService));
 
+		// FORK:agentGraph begin
+		services.set(IAgentGraphMainService, new SyncDescriptor(AgentGraphMainService, undefined, false /* proxied to other processes */));
+		// FORK:agentGraph end
+
 		// Browser View
 		services.set(IBrowserViewMainService, new SyncDescriptor(BrowserViewMainService, undefined, false /* proxied to other processes */));
 		services.set(IBrowserViewGroupMainService, new SyncDescriptor(BrowserViewGroupMainService, undefined, false /* proxied to other processes */));
@@ -1298,6 +1306,11 @@ export class CodeApplication extends Disposable {
 		// Encryption
 		const encryptionChannel = ProxyChannel.fromService(accessor.get(IEncryptionMainService), disposables);
 		mainProcessElectronServer.registerChannel('encryption', encryptionChannel);
+
+		// FORK:agentGraph begin
+		const agentGraphChannel = ProxyChannel.fromService(accessor.get(IAgentGraphMainService), disposables);
+		mainProcessElectronServer.registerChannel(AGENT_GRAPH_CHANNEL, agentGraphChannel);
+		// FORK:agentGraph end
 
 		// Browser View
 		const browserViewChannel = ProxyChannel.fromService(accessor.get(IBrowserViewMainService), disposables);

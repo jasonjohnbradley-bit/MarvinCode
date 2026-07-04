@@ -170,6 +170,10 @@ import './contrib/browserView/electron-browser/browserView.contribution.js';
 // Splash
 import './contrib/splash/electron-browser/splash.contribution.js';
 
+// FORK:agentGraph begin
+import './contrib/agentGraph/electron-browser/agentGraph.contribution.js';
+// FORK:agentGraph end
+
 // Local History
 import './contrib/localHistory/electron-browser/localHistory.contribution.js';
 
