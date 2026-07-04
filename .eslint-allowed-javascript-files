@@ -62,6 +62,11 @@ extensions/html/build/update-grammar.mjs
 extensions/json/build/update-grammars.js
 extensions/kanban/media/board.js
 extensions/latex/build/update-grammars.js
+src/vs/workbench/contrib/agentGraph/electron-browser/media/graphView.js
+src/vs/workbench/contrib/agentGraph/electron-browser/media/vendor/cose-base.js
+src/vs/workbench/contrib/agentGraph/electron-browser/media/vendor/cytoscape-fcose.js
+src/vs/workbench/contrib/agentGraph/electron-browser/media/vendor/cytoscape.min.js
+src/vs/workbench/contrib/agentGraph/electron-browser/media/vendor/layout-base.js
 extensions/less/build/update-grammar.js
 extensions/media-preview/media/audioPreview.js
 extensions/media-preview/media/imagePreview.js

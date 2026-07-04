@@ -1,0 +1,49 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	font-family: var(--vscode-font-family);
+	color: var(--vscode-foreground);
+	background-color: var(--vscode-editor-background);
+}
+
+#toolbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+#sessionFilter {
+	background-color: var(--vscode-dropdown-background);
+	color: var(--vscode-dropdown-foreground);
+	border: 1px solid var(--vscode-dropdown-border);
+	padding: 2px 6px;
+	border-radius: 2px;
+	max-width: 320px;
+}
+
+#liveLabel {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 0.9em;
+}
+
+#stats {
+	margin-left: auto;
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+#graph {
+	height: calc(100% - 34px);
+	width: 100%;
+}

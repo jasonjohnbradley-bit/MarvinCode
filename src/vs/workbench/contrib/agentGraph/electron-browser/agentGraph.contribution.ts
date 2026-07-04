@@ -9,10 +9,11 @@ import { Action2, registerAction2 } from '../../../../platform/actions/common/ac
 import { AGENT_GRAPH_CHANNEL, IAgentGraphService } from '../../../../platform/agentGraph/common/agentGraph.js';
 import { ConfigurationScope, Extensions as ConfigurationExtensions, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
 import { registerMainProcessRemoteService } from '../../../../platform/ipc/electron-browser/services.js';
-import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
+import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
+import { AgentGraphEditorManager } from './agentGraphEditor.js';
 import { ChatAgentGraphListener } from './chatAgentGraphListener.js';
 
 registerMainProcessRemoteService(IAgentGraphService, AGENT_GRAPH_CHANNEL);
@@ -61,3 +62,25 @@ class DumpRecentAgentEventsAction extends Action2 {
 }
 
 registerAction2(DumpRecentAgentEventsAction);
+
+let graphEditorManager: AgentGraphEditorManager | undefined;
+
+class ShowAgentGraphAction extends Action2 {
+	constructor() {
+		super({
+			id: 'agentGraph.showGraph',
+			title: localize2('agentGraph.showGraph', "Agent Graph: Show Graph"),
+			category: Categories.View,
+			f1: true
+		});
+	}
+
+	async run(accessor: ServicesAccessor): Promise<void> {
+		if (!graphEditorManager) {
+			graphEditorManager = accessor.get(IInstantiationService).createInstance(AgentGraphEditorManager);
+		}
+		await graphEditorManager.show();
+	}
+}
+
+registerAction2(ShowAgentGraphAction);

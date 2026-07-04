@@ -71,6 +71,9 @@ export const unicodeFilter = Object.freeze<string[]>([
 	'!src/vs/base/browser/dompurify/**',
 	'!src/vs/workbench/services/keybinding/browser/keyboardLayouts/**',
 	'!src/vs/workbench/contrib/terminal/common/scripts/psreadline/**',
+	// FORK:agentGraph begin
+	'!src/vs/workbench/contrib/agentGraph/electron-browser/media/vendor/**',
+	// FORK:agentGraph end
 
 	// Files with licences
 	'!src/vs/platform/endpoint/common/licenseAgreement.ts',
@@ -91,6 +94,9 @@ export const indentationFilter = Object.freeze<string[]>([
 	'!src/vs/base/common/signals-core/**',
 	'!src/vs/base/common/marked/marked.js',
 	'!src/vs/base/common/semver/semver.js',
+	// FORK:agentGraph begin
+	'!src/vs/workbench/contrib/agentGraph/electron-browser/media/**',
+	// FORK:agentGraph end
 	'!src/vs/base/node/terminateProcess.sh',
 	'!src/vs/base/node/cpuUsage.sh',
 	'!src/vs/editor/common/languages/highlights/*.scm',
