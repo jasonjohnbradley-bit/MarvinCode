@@ -1,0 +1,10 @@
+{
+	"displayName": "Kanban Boards",
+	"description": "File-based Kanban boards stored in your workspace.",
+	"customEditors.displayName": "Kanban Board",
+	"command.newBoard": "New Board",
+	"command.refreshBoards": "Refresh Boards",
+	"view.boards": "Boards",
+	"viewContainer.kanban": "Kanban",
+	"configuration.globalBoardsFolder": "Folder that holds your global Kanban boards (each board is a subfolder with a .kanban directory). Global boards are available in every window, regardless of the open workspace."
+}

@@ -7,13 +7,15 @@ Every upstream (Microsoft) file this fork modifies is listed here, with how to r
 - `extensions/kanban/` (planned, Phase 1)
 - `extensions/agent-runner/` (planned, Phase 6)
 
-**Budget: 6 modified upstream files maximum.** Every edit is wrapped in `// FORK:agentGraph begin/end` markers (JSON files excepted). Never modify extHost/mainThread RPC protocol files or `vscode.proposed.*.d.ts`.
+**Budget: 7 modified upstream files maximum.** Every edit is wrapped in `// FORK:agentGraph begin/end` markers (JSON files excepted). Never modify extHost/mainThread RPC protocol files or `vscode.proposed.*.d.ts`.
 
 ## Modified upstream files
 
 | # | File | What | Re-apply note |
 |---|------|------|---------------|
 | 1 | `product.json` | MarvinCode branding: nameShort/nameLong, applicationName, dataFolderName, sharedDataFolderName, server/tunnel names, win32* identity (fresh GUIDs), darwinBundleIdentifier, urlProtocol | On conflict, keep our values for all identity fields; take upstream for everything else (builtInExtensions versions etc.) |
+| 2 | `build/gulpfile.extensions.ts` | Added `extensions/kanban/tsconfig.json` (and later `extensions/agent-runner/tsconfig.json`) to the hardcoded `compilations` array | Re-add the fork lines to the array, alphabetical position is cosmetic |
+| 3 | `.eslint-allowed-javascript-files` | Added `extensions/kanban/media/board.js` (hand-written webview script, same pattern as media-preview) | Re-add the one line, alphabetical position is cosmetic |
 
 ## Merge procedure (monthly)
 

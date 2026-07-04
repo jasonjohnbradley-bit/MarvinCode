@@ -1,0 +1,149 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	padding: 0 16px;
+	font-family: var(--vscode-font-family);
+	color: var(--vscode-foreground);
+	background-color: var(--vscode-editor-background);
+}
+
+.board-header {
+	padding: 12px 0 4px;
+}
+
+.board-title {
+	margin: 0;
+	font-size: 1.3em;
+	font-weight: 600;
+}
+
+.columns {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	overflow-x: auto;
+	padding-bottom: 16px;
+}
+
+.column {
+	flex: 0 0 260px;
+	background-color: var(--vscode-sideBar-background);
+	border: 1px solid var(--vscode-panel-border);
+	border-radius: 6px;
+	padding: 8px;
+}
+
+.column-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	padding: 2px 4px 8px;
+}
+
+.column-title {
+	font-weight: 600;
+}
+
+.column-count {
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+.cards {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-height: 24px;
+}
+
+.card {
+	background-color: var(--vscode-editorWidget-background);
+	border: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
+	border-radius: 4px;
+	padding: 8px 10px;
+	cursor: pointer;
+}
+
+.card:hover,
+.card:focus {
+	outline: none;
+	border-color: var(--vscode-focusBorder);
+}
+
+.card-title {
+	font-size: 0.95em;
+	line-height: 1.35;
+}
+
+.card-labels {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 6px;
+}
+
+.card-label {
+	font-size: 0.75em;
+	padding: 1px 6px;
+	border-radius: 8px;
+	background-color: var(--vscode-badge-background);
+	color: var(--vscode-badge-foreground);
+}
+
+.card.dragging {
+	opacity: 0.4;
+}
+
+.column.drop-target {
+	border-color: var(--vscode-focusBorder);
+}
+
+.add-card,
+.add-column {
+	margin-top: 8px;
+	padding: 4px 8px;
+	border: none;
+	border-radius: 4px;
+	background: transparent;
+	color: var(--vscode-foreground);
+	opacity: 0.6;
+	cursor: pointer;
+	text-align: left;
+	font-family: inherit;
+	font-size: 0.9em;
+}
+
+.add-card:hover,
+.add-column:hover {
+	opacity: 1;
+	background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.add-column {
+	flex: 0 0 160px;
+	align-self: flex-start;
+	margin-top: 0;
+}
+
+.inline-input {
+	margin-top: 8px;
+	padding: 6px 8px;
+	border: 1px solid var(--vscode-input-border, var(--vscode-focusBorder));
+	border-radius: 4px;
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	font-family: inherit;
+	font-size: 0.9em;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.board-error {
+	margin-top: 20px;
+	color: var(--vscode-errorForeground);
+	font-family: var(--vscode-editor-font-family);
+	white-space: pre-wrap;
+}

@@ -1,0 +1,104 @@
+{
+	"name": "kanban",
+	"displayName": "%displayName%",
+	"description": "%description%",
+	"version": "1.0.0",
+	"publisher": "vscode",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.70.0"
+	},
+	"main": "./out/extension",
+	"categories": [
+		"Other"
+	],
+	"extensionKind": [
+		"workspace"
+	],
+	"activationEvents": [],
+	"capabilities": {
+		"virtualWorkspaces": false,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"contributes": {
+		"customEditors": [
+			{
+				"viewType": "kanban.board",
+				"displayName": "%customEditors.displayName%",
+				"selector": [
+					{
+						"filenamePattern": "**/.kanban/board.json"
+					}
+				],
+				"priority": "default"
+			}
+		],
+		"commands": [
+			{
+				"command": "kanban.newBoard",
+				"title": "%command.newBoard%",
+				"category": "Kanban",
+				"icon": "$(add)"
+			},
+			{
+				"command": "kanban.refreshBoards",
+				"title": "%command.refreshBoards%",
+				"category": "Kanban",
+				"icon": "$(refresh)"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "kanban",
+					"title": "%viewContainer.kanban%",
+					"icon": "media/kanban-icon.svg"
+				}
+			]
+		},
+		"views": {
+			"kanban": [
+				{
+					"id": "kanban.boards",
+					"name": "%view.boards%"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "kanban.newBoard",
+					"when": "view == kanban.boards",
+					"group": "navigation"
+				},
+				{
+					"command": "kanban.refreshBoards",
+					"when": "view == kanban.boards",
+					"group": "navigation"
+				}
+			]
+		},
+		"configuration": [
+			{
+				"title": "Kanban",
+				"properties": {
+					"kanban.globalBoardsFolder": {
+						"type": "string",
+						"default": "~/kanban",
+						"description": "%configuration.globalBoardsFolder%"
+					}
+				}
+			}
+		]
+	},
+	"scripts": {
+		"compile": "gulp compile-extension:kanban",
+		"watch": "gulp watch-extension:kanban"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	}
+}
