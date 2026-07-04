@@ -9,11 +9,17 @@ import { Action2, registerAction2 } from '../../../../platform/actions/common/ac
 import { AGENT_GRAPH_CHANNEL, IAgentGraphService } from '../../../../platform/agentGraph/common/agentGraph.js';
 import { ConfigurationScope, Extensions as ConfigurationExtensions, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
 import { registerMainProcessRemoteService } from '../../../../platform/ipc/electron-browser/services.js';
+import { Codicon } from '../../../../base/common/codicons.js';
+import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
 import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
+import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
+import { ViewPaneContainer } from '../../../browser/parts/views/viewPaneContainer.js';
 import { registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
+import { Extensions as ViewContainerExtensions, IViewContainersRegistry, IViewsRegistry, ViewContainerLocation } from '../../../common/views.js';
 import { AgentGraphEditorManager } from './agentGraphEditor.js';
+import { AgentGraphViewPane } from './agentGraphViewPane.js';
 import { ChatAgentGraphListener } from './chatAgentGraphListener.js';
 
 registerMainProcessRemoteService(IAgentGraphService, AGENT_GRAPH_CHANNEL);
@@ -84,3 +90,25 @@ class ShowAgentGraphAction extends Action2 {
 }
 
 registerAction2(ShowAgentGraphAction);
+
+const agentGraphViewIcon = registerIcon('agent-graph-view-icon', Codicon.typeHierarchySub, localize('agentGraphViewIcon', "View icon of the Agent Graph view."));
+
+const AGENT_GRAPH_CONTAINER_ID = 'workbench.view.agentGraph';
+
+const viewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
+	id: AGENT_GRAPH_CONTAINER_ID,
+	title: localize2('agentGraph.viewContainer', "Agent Graph"),
+	icon: agentGraphViewIcon,
+	ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [AGENT_GRAPH_CONTAINER_ID, { mergeViewWithContainerWhenSingleView: true }]),
+	order: 20,
+	hideIfEmpty: false
+}, ViewContainerLocation.Sidebar);
+
+Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry).registerViews([{
+	id: AgentGraphViewPane.ID,
+	name: localize2('agentGraph.view', "Graph"),
+	containerIcon: agentGraphViewIcon,
+	ctorDescriptor: new SyncDescriptor(AgentGraphViewPane),
+	canToggleVisibility: false,
+	canMoveView: true
+}], viewContainer);

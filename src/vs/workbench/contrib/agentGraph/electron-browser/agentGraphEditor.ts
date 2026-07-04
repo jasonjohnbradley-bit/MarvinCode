@@ -10,13 +10,11 @@ import { FileAccess } from '../../../../base/common/network.js';
 import { URI } from '../../../../base/common/uri.js';
 import * as nls from '../../../../nls.js';
 import { IAgentGraphService } from '../../../../platform/agentGraph/common/agentGraph.js';
-import { asWebviewUri, webviewGenericCspSource } from '../../webview/common/webview.js';
 import { WebviewInput } from '../../webviewPanel/browser/webviewEditorInput.js';
 import { IWebviewWorkbenchService } from '../../webviewPanel/browser/webviewWorkbenchService.js';
 import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
 import { ACTIVE_GROUP, IEditorService } from '../../../services/editor/common/editorService.js';
-
-const MEDIA_ROOT = 'vs/workbench/contrib/agentGraph/electron-browser/media';
+import { AGENT_GRAPH_MEDIA_ROOT, renderAgentGraphHtml } from './agentGraphWebview.js';
 
 /**
  * Hosts the knowledge-graph webview as an editor tab, modeled on the
@@ -44,7 +42,7 @@ export class AgentGraphEditorManager extends Disposable {
 			return;
 		}
 
-		const mediaRoot = FileAccess.asFileUri(MEDIA_ROOT);
+		const mediaRoot = FileAccess.asFileUri(AGENT_GRAPH_MEDIA_ROOT);
 		this.current = this.webviewWorkbenchService.openWebview(
 			{
 				title,
@@ -84,7 +82,7 @@ export class AgentGraphEditorManager extends Disposable {
 			this.current = undefined;
 		}));
 
-		this.current.webview.setHtml(this.renderBody());
+		this.current.webview.setHtml(renderAgentGraphHtml());
 	}
 
 	private async pushData(): Promise<void> {
@@ -98,31 +96,4 @@ export class AgentGraphEditorManager extends Disposable {
 		this.current.webview.postMessage({ type: 'graph', snapshot, sessions });
 	}
 
-	private renderBody(): string {
-		const mediaRoot = asWebviewUri(FileAccess.asFileUri(MEDIA_ROOT));
-		const csp = webviewGenericCspSource;
-		return /* html */ `<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${csp} 'unsafe-inline'; script-src ${csp};">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="${mediaRoot}/graphView.css" rel="stylesheet">
-	<title>Agent Graph</title>
-</head>
-<body>
-	<div id="toolbar">
-		<select id="sessionFilter"><option value="">All sessions</option></select>
-		<label id="liveLabel"><input type="checkbox" id="liveToggle" checked> Live</label>
-		<span id="stats"></span>
-	</div>
-	<div id="graph"></div>
-	<script src="${mediaRoot}/vendor/layout-base.js"></script>
-	<script src="${mediaRoot}/vendor/cose-base.js"></script>
-	<script src="${mediaRoot}/vendor/cytoscape.min.js"></script>
-	<script src="${mediaRoot}/vendor/cytoscape-fcose.js"></script>
-	<script src="${mediaRoot}/graphView.js"></script>
-</body>
-</html>`;
-	}
 }

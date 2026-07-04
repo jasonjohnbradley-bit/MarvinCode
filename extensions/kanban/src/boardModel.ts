@@ -23,6 +23,7 @@ export interface Card {
 	readonly title: string;
 	readonly column: string;
 	readonly labels: readonly string[];
+	readonly sessions: readonly string[];
 	readonly body: string;
 	readonly fileName: string;
 	readonly uri: vscode.Uri;
@@ -96,6 +97,7 @@ export async function loadCards(boardUri: vscode.Uri): Promise<Card[]> {
 				title: meta['title'] ?? fileName,
 				column: meta['column'] ?? '',
 				labels: meta['labels'] ? meta['labels'].split(',').map(label => label.trim()).filter(label => label.length > 0) : [],
+				sessions: meta['sessions'] ? meta['sessions'].split(',').map(id => id.trim()).filter(id => id.length > 0) : [],
 				body,
 				fileName,
 				uri

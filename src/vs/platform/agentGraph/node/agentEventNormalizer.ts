@@ -6,6 +6,23 @@
 import { generateUuid } from '../../../base/common/uuid.js';
 import { AgentEventVerb, IAgentEvent, IAgentEventObject, IAgentGraphEdge, IAgentGraphNode } from '../common/agentGraph.js';
 
+const KANBAN_CARD_PATTERN = /\/\.kanban\/cards\/([\w.-]+)\.md$/;
+
+/**
+ * When a file object points at a Kanban card, contribute a task object so
+ * the card shows up in the graph and can be linked back to the session.
+ */
+export function addKanbanTaskObjects(objects: IAgentEventObject[]): void {
+	for (const object of [...objects]) {
+		if (object.type === 'file') {
+			const match = KANBAN_CARD_PATTERN.exec(object.key);
+			if (match && !objects.some(existing => existing.type === 'task' && existing.key === match[1])) {
+				objects.push({ type: 'task', key: match[1], label: `card ${match[1]}` });
+			}
+		}
+	}
+}
+
 /**
  * Maps a Claude Code hook payload (https://code.claude.com/docs/en/hooks)
  * to the normalized event shape, or undefined for hook events we ignore.
@@ -69,6 +86,8 @@ export function normalizeClaudeCodeHook(raw: Record<string, unknown>, now: numbe
 			objects.push({ type: 'command', key: label, label });
 		}
 	}
+
+	addKanbanTaskObjects(objects);
 
 	const agentType = typeof raw['agent_type'] === 'string' ? raw['agent_type'] as string : undefined;
 	return {

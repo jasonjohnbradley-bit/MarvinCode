@@ -52,10 +52,16 @@
 		cardEl.draggable = true;
 		cardEl.dataset.cardId = card.id;
 		cardEl.appendChild(el('div', 'card-title', card.title));
-		if (card.labels.length) {
+		if (card.labels.length || (card.sessions && card.sessions.length)) {
 			const labelsEl = el('div', 'card-labels');
 			for (const label of card.labels) {
 				labelsEl.appendChild(el('span', 'card-label', label));
+			}
+			if (card.sessions && card.sessions.length) {
+				// allow-any-unicode-next-line
+				const chip = el('span', 'card-label card-sessions', `⛓ ${card.sessions.length} session${card.sessions.length === 1 ? '' : 's'}`);
+				chip.title = 'Agent sessions that touched this card:\n' + card.sessions.join('\n');
+				labelsEl.appendChild(chip);
 			}
 			cardEl.appendChild(labelsEl);
 		}

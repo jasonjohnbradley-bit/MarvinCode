@@ -4,12 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
+import { autorun } from '../../../../base/common/observable.js';
 import { generateUuid } from '../../../../base/common/uuid.js';
 import { AgentEventVerb, IAgentEvent, IAgentEventObject, IAgentGraphService } from '../../../../platform/agentGraph/common/agentGraph.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { LanguageModelToolsService } from '../../chat/browser/tools/languageModelToolsService.js';
 import { IChatService } from '../../chat/common/chatService/chatService.js';
+import { IChatEditingService, ModifiedFileEntryState } from '../../chat/common/editing/chatEditingService.js';
 import { ILanguageModelToolsService } from '../../chat/common/tools/languageModelToolsService.js';
 
 const EDIT_TOOL_PATTERN = /edit|write|create_file|apply_patch|replace_string|insert_edit/i;
@@ -28,10 +30,50 @@ export class ChatAgentGraphListener extends Disposable implements IWorkbenchCont
 	constructor(
 		@ILanguageModelToolsService toolsService: ILanguageModelToolsService,
 		@IChatService chatService: IChatService,
+		@IChatEditingService chatEditingService: IChatEditingService,
 		@IAgentGraphService private readonly agentGraphService: IAgentGraphService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
+
+		// Agent file edits carry their accept/reject outcome into the graph
+		const entryStates = new Map<string, ModifiedFileEntryState>();
+		this._register(autorun(reader => {
+			for (const session of chatEditingService.editingSessionsObs.read(reader)) {
+				for (const entry of session.entries.read(reader)) {
+					const state = entry.state.read(reader);
+					if (entryStates.get(entry.entryId) === state) {
+						continue;
+					}
+					entryStates.set(entry.entryId, state);
+					if (entryStates.size > 2000) {
+						entryStates.clear();
+					}
+					if (state !== ModifiedFileEntryState.Accepted && state !== ModifiedFileEntryState.Rejected) {
+						continue;
+					}
+					const accepted = state === ModifiedFileEntryState.Accepted;
+					const path = entry.modifiedURI.fsPath.replace(/\\/g, '/');
+					const objects: IAgentEventObject[] = [{ type: 'file', key: path, label: path.split('/').pop() ?? path }];
+					const cardMatch = /\/\.kanban\/cards\/([\w.-]+)\.md$/.exec(path);
+					if (cardMatch) {
+						objects.push({ type: 'task', key: cardMatch[1], label: `card ${cardMatch[1]}` });
+					}
+					this.send({
+						id: generateUuid(),
+						ts: Date.now(),
+						source: 'vscode-chat',
+						sessionId: session.chatSessionResource.toString(),
+						promptId: entry.lastModifyingRequestId,
+						actor: 'vscode-chat',
+						verb: 'file.edit',
+						objects,
+						ok: accepted,
+						payload: { editState: accepted ? 'accepted' : 'rejected' }
+					});
+				}
+			}
+		}));
 
 		this._register(chatService.onDidSubmitRequest(e => {
 			try {
@@ -64,6 +106,10 @@ export class ChatAgentGraphListener extends Disposable implements IWorkbenchCont
 						objects.push({ type: 'file', key: normalized, label: normalized.split('/').pop() ?? normalized });
 						if (EDIT_TOOL_PATTERN.test(e.toolId)) {
 							verb = 'file.edit';
+						}
+						const cardMatch = /\/\.kanban\/cards\/([\w.-]+)\.md$/.exec(normalized);
+						if (cardMatch) {
+							objects.push({ type: 'task', key: cardMatch[1], label: `card ${cardMatch[1]}` });
 						}
 					}
 					const command = typeof parameters?.['command'] === 'string' ? parameters['command'] as string : undefined;

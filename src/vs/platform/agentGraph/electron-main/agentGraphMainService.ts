@@ -14,6 +14,7 @@ import { ILogService } from '../../log/common/log.js';
 import { IAgentEvent, IAgentGraphFilter, IAgentGraphService, IAgentGraphSnapshot, IAgentSessionSummary } from '../common/agentGraph.js';
 import { deriveGraph, normalizeClaudeCodeHook, normalizeCustomEvent } from '../node/agentEventNormalizer.js';
 import { AgentGraphStore } from '../node/agentGraphStore.js';
+import { linkSessionToTouchedCards } from '../node/kanbanCardLinker.js';
 
 export const IAgentGraphMainService = createDecorator<IAgentGraphMainService>('agentGraphMainService');
 
@@ -116,6 +117,11 @@ export class AgentGraphMainService extends Disposable implements IAgentGraphMain
 					this._onDidIngest.fire(event);
 				} catch (error) {
 					this.logService.error('[agentGraph] failed to store event', error);
+				}
+				try {
+					await linkSessionToTouchedCards(event);
+				} catch (error) {
+					this.logService.trace('[agentGraph] failed to link session to card', error);
 				}
 			}
 		} finally {

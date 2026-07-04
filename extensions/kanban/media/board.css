@@ -93,6 +93,11 @@ body {
 	color: var(--vscode-badge-foreground);
 }
 
+.card-sessions {
+	background-color: var(--vscode-charts-purple, #b180d7);
+	color: var(--vscode-editor-background);
+}
+
 .card.dragging {
 	opacity: 0.4;
 }
