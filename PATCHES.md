@@ -18,6 +18,7 @@ Every upstream (Microsoft) file this fork modifies is listed here, with how to r
 | 3 | `.eslint-allowed-javascript-files` | Added `extensions/kanban/media/board.js` (hand-written webview script, same pattern as media-preview) | Re-add the one line, alphabetical position is cosmetic |
 | 4 | `src/vs/code/electron-main/app.ts` | agentGraph: service registration (`services.set`) + IPC channel registration, both in `// FORK:agentGraph` blocks | Re-add the two marked blocks next to the Encryption service/channel lines |
 | 5 | `src/vs/workbench/workbench.desktop.main.ts` | One side-effect import of `contrib/agentGraph` in a `// FORK:agentGraph` block | Re-add the marked import at the end of the contrib imports |
+| 6 | `src/vs/workbench/contrib/chat/browser/tools/languageModelToolsService.ts` | `IToolFinishedEvent` + `onDidFinishTool` emitter on the concrete class (NOT the interface — avoids mock/test churn); `invokeTool` renamed to private `_doInvokeTool` and wrapped by a try/finally that fires the event. All in `// FORK:agentGraph` blocks | If upstream refactors `invokeTool`, re-apply: rename their method to `_doInvokeTool`, re-add the wrapper + emitter + event interface. ~30 lines total |
 
 ## Merge procedure (monthly)
 

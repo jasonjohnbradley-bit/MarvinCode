@@ -112,6 +112,18 @@ export const globalAutoApproveDescription = localize2(
 	'Global auto approve also known as "YOLO mode" disables manual approval completely for _all tools in all workspaces_, allowing the agent to act fully autonomously. This is extremely dangerous and is *never* recommended, even containerized environments like [Codespaces](https://github.com/features/codespaces) and [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) have user keys forwarded into the container that could be compromised.\n\n**This feature disables [critical security protections](https://code.visualstudio.com/docs/copilot/security) and makes it much easier for an attacker to compromise the machine.**\n\nNote: This setting only controls tool approval and does not prevent the agent from asking questions. To automatically answer agent questions, use the [`chat.autoReply`](command:workbench.action.openSettings?%5B%22chat.autoReply%22%5D) setting.'
 );
 
+// FORK:agentGraph begin
+export interface IToolFinishedEvent {
+	readonly callId: string;
+	readonly toolId: string;
+	readonly sessionResource: URI | undefined;
+	readonly chatRequestId: string | undefined;
+	readonly parameters: unknown;
+	readonly ok: boolean;
+	readonly durationMs: number;
+}
+// FORK:agentGraph end
+
 export class LanguageModelToolsService extends Disposable implements ILanguageModelToolsService {
 	_serviceBrand: undefined;
 	readonly vscodeToolSet: ToolSet;
@@ -125,6 +137,11 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 	readonly onDidPrepareToolCallBecomeUnresponsive = this._onDidPrepareToolCallBecomeUnresponsive.event;
 	private readonly _onDidInvokeTool = this._register(new Emitter<IToolInvokedEvent>());
 	readonly onDidInvokeTool = this._onDidInvokeTool.event;
+
+	// FORK:agentGraph begin
+	private readonly _onDidFinishTool = this._register(new Emitter<IToolFinishedEvent>());
+	readonly onDidFinishTool = this._onDidFinishTool.event;
+	// FORK:agentGraph end
 
 	/** Throttle tools updates because it sends all tools and runs on context key updates */
 	private readonly _onDidChangeToolsScheduler = this._register(new RunOnceScheduler(() => this._onDidChangeTools.fire(), 750));
@@ -486,7 +503,28 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 		return undefined;
 	}
 
+	// FORK:agentGraph begin
 	async invokeTool(dto: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult> {
+		const forkToolCallStarted = Date.now();
+		let forkToolCallResult: IToolResult | undefined;
+		try {
+			forkToolCallResult = await this._doInvokeTool(dto, countTokens, token);
+			return forkToolCallResult;
+		} finally {
+			this._onDidFinishTool.fire({
+				callId: dto.callId,
+				toolId: dto.toolId,
+				sessionResource: dto.context?.sessionResource,
+				chatRequestId: dto.chatRequestId,
+				parameters: dto.parameters,
+				ok: forkToolCallResult !== undefined && !forkToolCallResult.toolResultError,
+				durationMs: Date.now() - forkToolCallStarted
+			});
+		}
+	}
+	// FORK:agentGraph end
+
+	private async _doInvokeTool(dto: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult> {
 		this._logService.trace(`[LanguageModelToolsService#invokeTool] Invoking tool ${dto.toolId} with parameters ${JSON.stringify(dto.parameters)}`);
 
 		const toolData = this._tools.get(dto.toolId)?.data;

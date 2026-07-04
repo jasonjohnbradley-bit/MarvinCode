@@ -12,8 +12,12 @@ import { registerMainProcessRemoteService } from '../../../../platform/ipc/elect
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
+import { registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
+import { ChatAgentGraphListener } from './chatAgentGraphListener.js';
 
 registerMainProcessRemoteService(IAgentGraphService, AGENT_GRAPH_CHANNEL);
+
+registerWorkbenchContribution2(ChatAgentGraphListener.ID, ChatAgentGraphListener, WorkbenchPhase.AfterRestored);
 
 Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration).registerConfiguration({
 	id: 'agentGraph',
