@@ -1,0 +1,5 @@
+{
+	"displayName": "Agent Runner",
+	"description": "Hosts custom agents whose actions stream into the Agent Graph.",
+	"command.runStub": "Run Stub Session"
+}

@@ -1,0 +1,42 @@
+{
+	"name": "agent-runner",
+	"displayName": "%displayName%",
+	"description": "%description%",
+	"version": "1.0.0",
+	"publisher": "vscode",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.70.0"
+	},
+	"main": "./out/extension",
+	"categories": [
+		"Other"
+	],
+	"extensionKind": [
+		"workspace"
+	],
+	"activationEvents": [],
+	"capabilities": {
+		"virtualWorkspaces": false,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"contributes": {
+		"commands": [
+			{
+				"command": "agentRunner.runStub",
+				"title": "%command.runStub%",
+				"category": "Agent Runner"
+			}
+		]
+	},
+	"scripts": {
+		"compile": "gulp compile-extension:agent-runner",
+		"watch": "gulp watch-extension:agent-runner"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	}
+}
