@@ -160,5 +160,18 @@ export function deriveGraph(event: IAgentEvent): { nodes: IAgentGraphNode[]; edg
 			}
 		}
 	}
+
+	// Kanban card links become task-to-task edges so the dependency
+	// structure of a board is visible in the graph
+	const payload = event.payload as { kanbanLink?: { from?: unknown; to?: unknown; type?: unknown } } | undefined;
+	const kanbanLink = payload?.kanbanLink;
+	if (kanbanLink && typeof kanbanLink.from === 'string' && typeof kanbanLink.to === 'string' && typeof kanbanLink.type === 'string') {
+		for (const key of [kanbanLink.from, kanbanLink.to]) {
+			if (!nodes.some(node => node.type === 'task' && node.key === key)) {
+				nodes.push({ type: 'task', key, label: `card ${key}`, firstSeen: event.ts, lastSeen: event.ts });
+			}
+		}
+		edges.push({ fromType: 'task', fromKey: kanbanLink.from, toType: 'task', toKey: kanbanLink.to, rel: kanbanLink.type, eventId: event.id, ts: event.ts });
+	}
 	return { nodes, edges };
 }

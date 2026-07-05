@@ -52,10 +52,32 @@
 		cardEl.draggable = true;
 		cardEl.dataset.cardId = card.id;
 		cardEl.appendChild(el('div', 'card-title', card.title));
-		if (card.labels.length || (card.sessions && card.sessions.length)) {
+		const hasChips = card.labels.length || (card.sessions && card.sessions.length)
+			|| card.priority || card.blocked || card.handoffCount || (card.links && card.links.length);
+		if (hasChips) {
 			const labelsEl = el('div', 'card-labels');
+			if (card.priority) {
+				labelsEl.appendChild(el('span', `card-label card-priority priority-${card.priority}`, card.priority));
+			}
+			if (card.blocked) {
+				const chip = el('span', 'card-label card-blocked', 'blocked');
+				chip.title = 'Blocked by an unfinished card';
+				labelsEl.appendChild(chip);
+			}
 			for (const label of card.labels) {
 				labelsEl.appendChild(el('span', 'card-label', label));
+			}
+			if (card.links && card.links.length) {
+				// allow-any-unicode-next-line
+				const chip = el('span', 'card-label card-links', `→ ${card.links.length}`);
+				chip.title = 'Links:\n' + card.links.map(link => `${link.type}: ${link.target}`).join('\n');
+				labelsEl.appendChild(chip);
+			}
+			if (card.handoffCount) {
+				// allow-any-unicode-next-line
+				const chip = el('span', 'card-label card-handoffs', `✎ ${card.handoffCount}`);
+				chip.title = `${card.handoffCount} handoff note${card.handoffCount === 1 ? '' : 's'}`;
+				labelsEl.appendChild(chip);
 			}
 			if (card.sessions && card.sessions.length) {
 				// allow-any-unicode-next-line

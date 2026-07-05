@@ -7,9 +7,11 @@ import * as vscode from 'vscode';
 import { BoardEditorProvider } from './boardEditorProvider';
 import { scaffoldBoard } from './boardModel';
 import { BoardsViewProvider } from './boardsViewProvider';
+import { registerKanbanTools } from './tools';
 
 export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(BoardEditorProvider.register(context));
 	context.subscriptions.push(BoardsViewProvider.register());
 	context.subscriptions.push(vscode.commands.registerCommand('kanban.newBoard', () => scaffoldBoard()));
+	context.subscriptions.push(registerKanbanTools());
 }

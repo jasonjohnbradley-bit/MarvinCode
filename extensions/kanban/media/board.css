@@ -98,6 +98,46 @@ body {
 	color: var(--vscode-editor-background);
 }
 
+.card-priority {
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: 0.03em;
+}
+
+.priority-urgent {
+	background-color: var(--vscode-charts-red, #d1451f);
+	color: var(--vscode-editor-background);
+}
+
+.priority-high {
+	background-color: var(--vscode-charts-orange, #9c5039);
+	color: var(--vscode-editor-background);
+}
+
+.priority-medium {
+	background-color: var(--vscode-charts-yellow, #c98f45);
+	color: var(--vscode-editor-background);
+}
+
+.priority-low {
+	background-color: var(--vscode-charts-green, #8fa05a);
+	color: var(--vscode-editor-background);
+}
+
+.card-blocked {
+	background-color: transparent;
+	border: 1px solid var(--vscode-errorForeground, #e34524);
+	color: var(--vscode-errorForeground, #e34524);
+}
+
+.card-links,
+.card-handoffs {
+	background-color: transparent;
+	border: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
+	color: var(--vscode-foreground);
+	opacity: 0.85;
+}
+
 .card.dragging {
 	opacity: 0.4;
 }

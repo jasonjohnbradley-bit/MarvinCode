@@ -92,6 +92,23 @@ export class ChatAgentGraphListener extends Disposable implements IWorkbenchCont
 			}
 		}));
 
+		this._register(toolsService.onDidInvokeTool(e => {
+			try {
+				this.send({
+					id: generateUuid(),
+					ts: Date.now(),
+					source: 'vscode-chat',
+					sessionId: e.sessionResource?.toString() ?? 'vscode-chat-unknown',
+					promptId: e.requestId,
+					actor: 'vscode-chat',
+					verb: 'tool.start',
+					objects: [{ type: 'tool', key: e.toolId, label: e.toolId }]
+				});
+			} catch (error) {
+				this.logService.trace('[agentGraph] failed to record tool start', error);
+			}
+		}));
+
 		if (toolsService instanceof LanguageModelToolsService) {
 			this._register(toolsService.onDidFinishTool(e => {
 				try {
@@ -119,6 +136,28 @@ export class ChatAgentGraphListener extends Disposable implements IWorkbenchCont
 						verb = 'command.run';
 					}
 
+					// The kanban extension's LM tools carry card ids in their
+					// parameters — surface them as task nodes, and successful
+					// links as card-to-card edges (via the payload).
+					let payload: Record<string, unknown> | undefined;
+					if (e.toolId.startsWith('kanban_')) {
+						for (const key of ['cardId', 'fromCard', 'toCard']) {
+							const value = parameters?.[key];
+							if (typeof value === 'string' && !objects.some(o => o.type === 'task' && o.key === value)) {
+								objects.push({ type: 'task', key: value, label: `card ${value}` });
+							}
+						}
+						if (e.toolId === 'kanban_create_card' && e.ok) {
+							verb = 'task.create';
+						}
+						if (e.toolId === 'kanban_link_cards' && e.ok
+							&& typeof parameters?.['fromCard'] === 'string'
+							&& typeof parameters?.['toCard'] === 'string'
+							&& typeof parameters?.['type'] === 'string') {
+							payload = { kanbanLink: { from: parameters['fromCard'], to: parameters['toCard'], type: parameters['type'] } };
+						}
+					}
+
 					this.send({
 						id: generateUuid(),
 						ts: Date.now(),
@@ -129,7 +168,8 @@ export class ChatAgentGraphListener extends Disposable implements IWorkbenchCont
 						verb,
 						objects,
 						ok: e.ok,
-						durationMs: e.durationMs
+						durationMs: e.durationMs,
+						payload
 					});
 				} catch (error) {
 					this.logService.trace('[agentGraph] failed to record tool call', error);

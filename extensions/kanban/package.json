@@ -91,6 +91,146 @@
 					}
 				}
 			}
+		],
+		"languageModelTools": [
+			{
+				"name": "kanban_list_boards",
+				"displayName": "List Kanban Boards",
+				"toolReferenceName": "kanbanBoards",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Lists all Kanban boards (global and workspace). Returns each board's name, path and scope. Use the returned path as the 'board' argument for the other kanban tools.",
+				"userDescription": "%tool.listBoards%",
+				"inputSchema": {
+					"type": "object",
+					"properties": {}
+				}
+			},
+			{
+				"name": "kanban_list_cards",
+				"displayName": "List Kanban Cards",
+				"toolReferenceName": "kanbanCards",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Lists the columns and cards of a Kanban board, including each card's id, title, column, priority, labels, typed links, handoff count and blocked state.",
+				"userDescription": "%tool.listCards%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
+						"column": { "type": "string", "description": "Optional column id to filter by." }
+					}
+				}
+			},
+			{
+				"name": "kanban_create_card",
+				"displayName": "Create Kanban Card",
+				"toolReferenceName": "kanbanCreateCard",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Creates a new card on a Kanban board. The optional body supports markdown; a good card body is a brief covering files to touch, acceptance criteria and caveats.",
+				"userDescription": "%tool.createCard%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board", "column", "title"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
+						"column": { "type": "string", "description": "Column id to create the card in." },
+						"title": { "type": "string", "description": "Card title." },
+						"priority": { "type": "string", "enum": ["urgent", "high", "medium", "low"], "description": "Optional priority." },
+						"labels": { "type": "array", "items": { "type": "string" }, "description": "Optional labels." },
+						"body": { "type": "string", "description": "Optional markdown body (the card's brief)." }
+					}
+				}
+			},
+			{
+				"name": "kanban_update_card",
+				"displayName": "Update Kanban Card",
+				"toolReferenceName": "kanbanUpdateCard",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Updates a Kanban card: retitle, move to another column, change priority (empty string clears it) or replace labels.",
+				"userDescription": "%tool.updateCard%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board", "cardId"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
+						"cardId": { "type": "string", "description": "Id of the card to update." },
+						"title": { "type": "string", "description": "New title." },
+						"column": { "type": "string", "description": "Column id to move the card to (appended at the end)." },
+						"priority": { "type": "string", "enum": ["urgent", "high", "medium", "low", ""], "description": "New priority, or empty string to clear." },
+						"labels": { "type": "array", "items": { "type": "string" }, "description": "Replacement label list." }
+					}
+				}
+			},
+			{
+				"name": "kanban_link_cards",
+				"displayName": "Link Kanban Cards",
+				"toolReferenceName": "kanbanLinkCards",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Adds a typed link between two cards: 'blocking' (fromCard blocks toCard; refused if it would create a dependency cycle), 'related', or 'parent' (fromCard's parent is toCard).",
+				"userDescription": "%tool.linkCards%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board", "fromCard", "toCard", "type"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
+						"fromCard": { "type": "string", "description": "Id of the card the link starts from." },
+						"toCard": { "type": "string", "description": "Id of the card the link points to." },
+						"type": { "type": "string", "enum": ["blocking", "related", "parent"], "description": "Link type." }
+					}
+				}
+			},
+			{
+				"name": "kanban_ready_cards",
+				"displayName": "Ready Kanban Cards",
+				"toolReferenceName": "kanbanReadyCards",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Lists the cards that are actionable now: not in the done column (the board's last column) and not blocked by a 'blocking' link from any unfinished card. Use this to pick the next card to work on.",
+				"userDescription": "%tool.readyCards%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." }
+					}
+				}
+			},
+			{
+				"name": "kanban_add_handoff",
+				"displayName": "Add Kanban Handoff Note",
+				"toolReferenceName": "kanbanAddHandoff",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Appends a handoff note to a card's Handoffs section so the next agent or person can resume the work. Provide findings, next steps and blockers when finishing or pausing work on a card.",
+				"userDescription": "%tool.addHandoff%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board", "cardId"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
+						"cardId": { "type": "string", "description": "Id of the card to annotate." },
+						"author": { "type": "string", "description": "Who is writing the note (agent or person name)." },
+						"findings": { "type": "string", "description": "What was learned or accomplished." },
+						"nextSteps": { "type": "string", "description": "What should happen next." },
+						"blockers": { "type": "string", "description": "What is blocking progress." },
+						"note": { "type": "string", "description": "Free-form additional context." }
+					}
+				}
+			},
+			{
+				"name": "kanban_get_card_context",
+				"displayName": "Get Kanban Card Context",
+				"toolReferenceName": "kanbanCardContext",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Returns everything known about a card as a resume prompt: metadata, typed links in both directions (with titles and columns), agent sessions, and the full card body including handoff notes. Call this before starting work on a card.",
+				"userDescription": "%tool.cardContext%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board", "cardId"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
+						"cardId": { "type": "string", "description": "Id of the card." }
+					}
+				}
+			}
 		]
 	},
 	"scripts": {

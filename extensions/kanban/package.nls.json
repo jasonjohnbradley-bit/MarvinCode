@@ -6,5 +6,13 @@
 	"command.refreshBoards": "Refresh Boards",
 	"view.boards": "Boards",
 	"viewContainer.kanban": "Kanban",
-	"configuration.globalBoardsFolder": "Folder that holds your global Kanban boards (each board is a subfolder with a .kanban directory). Global boards are available in every window, regardless of the open workspace."
+	"configuration.globalBoardsFolder": "Folder that holds your global Kanban boards (each board is a subfolder with a .kanban directory). Global boards are available in every window, regardless of the open workspace.",
+	"tool.listBoards": "List your Kanban boards.",
+	"tool.listCards": "List a board's columns and cards.",
+	"tool.createCard": "Create a card on a board.",
+	"tool.updateCard": "Retitle, move or reprioritize a card.",
+	"tool.linkCards": "Link two cards (blocking, related or parent).",
+	"tool.readyCards": "List the cards that are ready to work on.",
+	"tool.addHandoff": "Add a handoff note to a card.",
+	"tool.cardContext": "Get a card's full context as a resume prompt."
 }
