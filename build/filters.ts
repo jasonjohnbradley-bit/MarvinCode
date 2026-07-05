@@ -73,6 +73,7 @@ export const unicodeFilter = Object.freeze<string[]>([
 	'!src/vs/workbench/contrib/terminal/common/scripts/psreadline/**',
 	// FORK:agentGraph begin
 	'!src/vs/workbench/contrib/agentGraph/electron-browser/media/vendor/**',
+	'!extensions/kanban/scripts/**',
 	// FORK:agentGraph end
 
 	// Files with licences
@@ -96,6 +97,7 @@ export const indentationFilter = Object.freeze<string[]>([
 	'!src/vs/base/common/semver/semver.js',
 	// FORK:agentGraph begin
 	'!src/vs/workbench/contrib/agentGraph/electron-browser/media/**',
+	'!extensions/kanban/scripts/**',
 	// FORK:agentGraph end
 	'!src/vs/base/node/terminateProcess.sh',
 	'!src/vs/base/node/cpuUsage.sh',
@@ -177,6 +179,9 @@ export const indentationFilter = Object.freeze<string[]>([
 
 export const copyrightFilter = Object.freeze<string[]>([
 	'**',
+	// FORK:agentGraph begin
+	'!extensions/kanban/scripts/**',
+	// FORK:agentGraph end
 	'!**/*.desktop',
 	'!**/*.json',
 	'!**/*.jsonc',

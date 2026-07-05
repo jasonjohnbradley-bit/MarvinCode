@@ -54,7 +54,7 @@ Use the kanban tools to work the board:
 - kanban_add_handoff — append a handoff note to a card
 - kanban_get_card_context — full context for one card`;
 
-function fileOpsSection(boardUri: vscode.Uri, firstColumnId: string): string {
+export function fileOpsSection(boardUri: vscode.Uri, firstColumnId: string): string {
 	const boardDir = vscode.Uri.joinPath(boardUri, '..').fsPath;
 	return `## How to Work the Board (file operations)
 

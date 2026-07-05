@@ -12,6 +12,8 @@
 	"command.jiraLinkBoard": "Link Board to Jira",
 	"command.jiraSync": "Sync Board with Jira",
 	"command.jiraPushCard": "Push Card to Jira",
+	"command.remarkableConnect": "Connect to reMarkable",
+	"command.remarkableImport": "Import Meeting Notes (reMarkable)",
 	"view.boards": "Boards",
 	"view.agents": "Agents",
 	"welcome.boards": "No Kanban boards yet.\n[Create a Board](command:kanban.newBoard)\nBoards are plain files in `.kanban/` folders — agents can edit them too.\n[Connect to Jira](command:kanban.jira.connect)",

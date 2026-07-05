@@ -90,6 +90,16 @@
 				"command": "kanban.jira.pushCard",
 				"title": "%command.jiraPushCard%",
 				"category": "Kanban"
+			},
+			{
+				"command": "kanban.remarkable.connect",
+				"title": "%command.remarkableConnect%",
+				"category": "Kanban"
+			},
+			{
+				"command": "kanban.remarkable.import",
+				"title": "%command.remarkableImport%",
+				"category": "Kanban"
 			}
 		],
 		"viewsContainers": {
@@ -225,10 +235,18 @@
 				"userDescription": "%tool.listCards%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board"],
+					"required": [
+						"board"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
-						"column": { "type": "string", "description": "Optional column id to filter by." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						},
+						"column": {
+							"type": "string",
+							"description": "Optional column id to filter by."
+						}
 					}
 				}
 			},
@@ -241,14 +259,45 @@
 				"userDescription": "%tool.createCard%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board", "column", "title"],
+					"required": [
+						"board",
+						"column",
+						"title"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
-						"column": { "type": "string", "description": "Column id to create the card in." },
-						"title": { "type": "string", "description": "Card title." },
-						"priority": { "type": "string", "enum": ["urgent", "high", "medium", "low"], "description": "Optional priority." },
-						"labels": { "type": "array", "items": { "type": "string" }, "description": "Optional labels." },
-						"body": { "type": "string", "description": "Optional markdown body (the card's brief)." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						},
+						"column": {
+							"type": "string",
+							"description": "Column id to create the card in."
+						},
+						"title": {
+							"type": "string",
+							"description": "Card title."
+						},
+						"priority": {
+							"type": "string",
+							"enum": [
+								"urgent",
+								"high",
+								"medium",
+								"low"
+							],
+							"description": "Optional priority."
+						},
+						"labels": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							},
+							"description": "Optional labels."
+						},
+						"body": {
+							"type": "string",
+							"description": "Optional markdown body (the card's brief)."
+						}
 					}
 				}
 			},
@@ -261,14 +310,45 @@
 				"userDescription": "%tool.updateCard%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board", "cardId"],
+					"required": [
+						"board",
+						"cardId"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
-						"cardId": { "type": "string", "description": "Id of the card to update." },
-						"title": { "type": "string", "description": "New title." },
-						"column": { "type": "string", "description": "Column id to move the card to (appended at the end)." },
-						"priority": { "type": "string", "enum": ["urgent", "high", "medium", "low", ""], "description": "New priority, or empty string to clear." },
-						"labels": { "type": "array", "items": { "type": "string" }, "description": "Replacement label list." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						},
+						"cardId": {
+							"type": "string",
+							"description": "Id of the card to update."
+						},
+						"title": {
+							"type": "string",
+							"description": "New title."
+						},
+						"column": {
+							"type": "string",
+							"description": "Column id to move the card to (appended at the end)."
+						},
+						"priority": {
+							"type": "string",
+							"enum": [
+								"urgent",
+								"high",
+								"medium",
+								"low",
+								""
+							],
+							"description": "New priority, or empty string to clear."
+						},
+						"labels": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							},
+							"description": "Replacement label list."
+						}
 					}
 				}
 			},
@@ -281,12 +361,34 @@
 				"userDescription": "%tool.linkCards%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board", "fromCard", "toCard", "type"],
+					"required": [
+						"board",
+						"fromCard",
+						"toCard",
+						"type"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
-						"fromCard": { "type": "string", "description": "Id of the card the link starts from." },
-						"toCard": { "type": "string", "description": "Id of the card the link points to." },
-						"type": { "type": "string", "enum": ["blocking", "related", "parent"], "description": "Link type." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						},
+						"fromCard": {
+							"type": "string",
+							"description": "Id of the card the link starts from."
+						},
+						"toCard": {
+							"type": "string",
+							"description": "Id of the card the link points to."
+						},
+						"type": {
+							"type": "string",
+							"enum": [
+								"blocking",
+								"related",
+								"parent"
+							],
+							"description": "Link type."
+						}
 					}
 				}
 			},
@@ -299,9 +401,14 @@
 				"userDescription": "%tool.readyCards%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board"],
+					"required": [
+						"board"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						}
 					}
 				}
 			},
@@ -314,15 +421,39 @@
 				"userDescription": "%tool.addHandoff%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board", "cardId"],
+					"required": [
+						"board",
+						"cardId"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
-						"cardId": { "type": "string", "description": "Id of the card to annotate." },
-						"author": { "type": "string", "description": "Who is writing the note (agent or person name)." },
-						"findings": { "type": "string", "description": "What was learned or accomplished." },
-						"nextSteps": { "type": "string", "description": "What should happen next." },
-						"blockers": { "type": "string", "description": "What is blocking progress." },
-						"note": { "type": "string", "description": "Free-form additional context." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						},
+						"cardId": {
+							"type": "string",
+							"description": "Id of the card to annotate."
+						},
+						"author": {
+							"type": "string",
+							"description": "Who is writing the note (agent or person name)."
+						},
+						"findings": {
+							"type": "string",
+							"description": "What was learned or accomplished."
+						},
+						"nextSteps": {
+							"type": "string",
+							"description": "What should happen next."
+						},
+						"blockers": {
+							"type": "string",
+							"description": "What is blocking progress."
+						},
+						"note": {
+							"type": "string",
+							"description": "Free-form additional context."
+						}
 					}
 				}
 			},
@@ -335,11 +466,23 @@
 				"userDescription": "%tool.startCoordinator%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board", "cardId"],
+					"required": [
+						"board",
+						"cardId"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
-						"cardId": { "type": "string", "description": "Id of the parent card to decompose." },
-						"instructions": { "type": "string", "description": "Optional extra instructions for this decomposition run." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						},
+						"cardId": {
+							"type": "string",
+							"description": "Id of the parent card to decompose."
+						},
+						"instructions": {
+							"type": "string",
+							"description": "Optional extra instructions for this decomposition run."
+						}
 					}
 				}
 			},
@@ -352,9 +495,14 @@
 				"userDescription": "%tool.syncJira%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board"],
+					"required": [
+						"board"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						}
 					}
 				}
 			},
@@ -367,10 +515,19 @@
 				"userDescription": "%tool.cardContext%",
 				"inputSchema": {
 					"type": "object",
-					"required": ["board", "cardId"],
+					"required": [
+						"board",
+						"cardId"
+					],
 					"properties": {
-						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
-						"cardId": { "type": "string", "description": "Id of the card." }
+						"board": {
+							"type": "string",
+							"description": "Board path (from kanban_list_boards) or board name."
+						},
+						"cardId": {
+							"type": "string",
+							"description": "Id of the card."
+						}
 					}
 				}
 			}
@@ -379,6 +536,9 @@
 	"scripts": {
 		"compile": "gulp compile-extension:kanban",
 		"watch": "gulp watch-extension:kanban"
+	},
+	"dependencies": {
+		"rmapi-js": "^10.2.0"
 	},
 	"repository": {
 		"type": "git",

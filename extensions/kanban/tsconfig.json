@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"rootDir": "./src",
 		"outDir": "./out",
+		"skipLibCheck": true,
 		"types": [
 			"node"
 		]
