@@ -56,7 +56,8 @@
 			{
 				"command": "kanban.decomposeCard",
 				"title": "%command.decomposeCard%",
-				"category": "Kanban"
+				"category": "Kanban",
+				"icon": "$(rocket)"
 			},
 			{
 				"command": "kanban.runCampaign",
@@ -82,7 +83,8 @@
 			{
 				"command": "kanban.jira.sync",
 				"title": "%command.jiraSync%",
-				"category": "Kanban"
+				"category": "Kanban",
+				"icon": "$(sync)"
 			},
 			{
 				"command": "kanban.jira.pushCard",
@@ -111,6 +113,16 @@
 				}
 			]
 		},
+		"viewsWelcome": [
+			{
+				"view": "kanban.boards",
+				"contents": "%welcome.boards%"
+			},
+			{
+				"view": "kanban.agents",
+				"contents": "%welcome.agents%"
+			}
+		],
 		"menus": {
 			"view/title": [
 				{
@@ -129,6 +141,18 @@
 					"command": "kanban.killAgent",
 					"when": "view == kanban.agents && viewItem == kanbanAgentRunning",
 					"group": "inline"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "kanban.jira.sync",
+					"when": "activeCustomEditorId == 'kanban.board'",
+					"group": "navigation@1"
+				},
+				{
+					"command": "kanban.decomposeCard",
+					"when": "activeCustomEditorId == 'kanban.board'",
+					"group": "navigation@2"
 				}
 			],
 			"commandPalette": [

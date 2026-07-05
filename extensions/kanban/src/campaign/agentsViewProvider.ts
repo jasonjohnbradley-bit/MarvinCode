@@ -6,6 +6,16 @@
 import * as vscode from 'vscode';
 import { AgentRun, AgentRunner, STALL_THRESHOLD_MS } from './agentRunner';
 
+interface AgentsGroup {
+	readonly group: string;
+}
+
+type AgentsElement = AgentRun | AgentsGroup;
+
+function isGroup(element: AgentsElement): element is AgentsGroup {
+	return typeof (element as { group?: unknown }).group === 'string';
+}
+
 function stateOf(run: AgentRun): { label: string; icon: vscode.ThemeIcon } {
 	switch (run.state) {
 		case 'queued':
@@ -30,18 +40,29 @@ function elapsed(run: AgentRun): string {
 	return seconds < 90 ? `${seconds}s` : `${Math.round(seconds / 60)}m`;
 }
 
-/** The live agent-status ("Horde") panel: one row per agent run. */
-export class AgentsViewProvider implements vscode.TreeDataProvider<AgentRun> {
+/**
+ * The live agent-status ("Horde") panel: campaign runs grouped under their
+ * campaign, standalone runs at the root. The view badge counts active runs.
+ */
+export class AgentsViewProvider implements vscode.TreeDataProvider<AgentsElement> {
 
 	private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
 	public static register(runner: AgentRunner): vscode.Disposable {
 		const provider = new AgentsViewProvider(runner);
+		const treeView = vscode.window.createTreeView('kanban.agents', { treeDataProvider: provider });
+		const updateBadge = () => {
+			const active = [...runner.runs.values()].filter(run => run.state === 'working' || run.state === 'queued').length;
+			treeView.badge = active > 0 ? { value: active, tooltip: vscode.l10n.t('{0} active agent(s)', active) } : undefined;
+		};
 		const ticker = setInterval(() => provider._onDidChangeTreeData.fire(), 5_000);
 		return vscode.Disposable.from(
-			vscode.window.registerTreeDataProvider('kanban.agents', provider),
-			runner.onDidChange(() => provider._onDidChangeTreeData.fire()),
+			treeView,
+			runner.onDidChange(() => {
+				provider._onDidChangeTreeData.fire();
+				updateBadge();
+			}),
 			new vscode.Disposable(() => clearInterval(ticker)),
 			provider._onDidChangeTreeData
 		);
@@ -49,7 +70,21 @@ export class AgentsViewProvider implements vscode.TreeDataProvider<AgentRun> {
 
 	constructor(private readonly runner: AgentRunner) { }
 
-	getTreeItem(run: AgentRun): vscode.TreeItem {
+	private recentRuns(): AgentRun[] {
+		return [...this.runner.runs.values()].sort((a, b) => b.queuedAt - a.queuedAt).slice(0, 100);
+	}
+
+	getTreeItem(element: AgentsElement): vscode.TreeItem {
+		if (isGroup(element)) {
+			const runs = this.recentRuns().filter(run => run.groupLabel === element.group);
+			const active = runs.filter(run => run.state === 'working' || run.state === 'queued').length;
+			const item = new vscode.TreeItem(element.group, vscode.TreeItemCollapsibleState.Expanded);
+			item.iconPath = active ? new vscode.ThemeIcon('rocket', new vscode.ThemeColor('charts.orange')) : new vscode.ThemeIcon('rocket');
+			item.description = active ? vscode.l10n.t('{0} active', active) : vscode.l10n.t('finished');
+			item.id = `group:${element.group}`;
+			return item;
+		}
+		const run = element;
 		const { label, icon } = stateOf(run);
 		const item = new vscode.TreeItem(`${run.kind === 'coordinator' ? 'DM: ' : ''}${run.card.title}`);
 		item.description = `${label} · ${elapsed(run)}`;
@@ -73,10 +108,15 @@ export class AgentsViewProvider implements vscode.TreeDataProvider<AgentRun> {
 		return item;
 	}
 
-	getChildren(element?: AgentRun): AgentRun[] {
+	getChildren(element?: AgentsElement): AgentsElement[] {
+		const runs = this.recentRuns();
 		if (element) {
-			return [];
+			return isGroup(element) ? runs.filter(run => run.groupLabel === element.group) : [];
 		}
-		return [...this.runner.runs.values()].sort((a, b) => b.queuedAt - a.queuedAt).slice(0, 50);
+		const groups = [...new Set(runs.filter(run => run.groupLabel).map(run => run.groupLabel!))];
+		return [
+			...groups.map(group => ({ group })),
+			...runs.filter(run => !run.groupLabel)
+		];
 	}
 }

@@ -16,6 +16,7 @@ export type AgentRunState = 'queued' | 'working' | 'done' | 'failed' | 'killed';
 export interface AgentRun {
 	readonly id: string;
 	readonly kind: 'card' | 'coordinator';
+	readonly groupLabel?: string;
 	readonly boardUri: vscode.Uri;
 	readonly card: Card;
 	state: AgentRunState;
@@ -125,7 +126,7 @@ export class AgentRunner implements vscode.Disposable {
 	}
 
 	/** Runs an agent on a card; resolves when the process exits. */
-	runOnCard(boardUri: vscode.Uri, board: BoardFile, cards: readonly Card[], card: Card): Promise<AgentRun> {
+	runOnCard(boardUri: vscode.Uri, board: BoardFile, cards: readonly Card[], card: Card, groupLabel?: string): Promise<AgentRun> {
 		const prompt = [
 			buildCardContext(board, cards, card),
 			'',
@@ -143,7 +144,7 @@ export class AgentRunner implements vscode.Disposable {
 			'',
 			'Do not change the card\'s `column` or `agentStatus` front-matter — the board manages those. Do not work on other cards.'
 		].join('\n');
-		return this.enqueue('card', boardUri, card, prompt);
+		return this.enqueue('card', boardUri, card, prompt, groupLabel);
 	}
 
 	/** Runs a coordinator (DM) decomposition prompt; resolves on exit. */
@@ -168,10 +169,11 @@ export class AgentRunner implements vscode.Disposable {
 		this._onDidChange.fire();
 	}
 
-	private enqueue(kind: 'card' | 'coordinator', boardUri: vscode.Uri, card: Card, prompt: string): Promise<AgentRun> {
+	private enqueue(kind: 'card' | 'coordinator', boardUri: vscode.Uri, card: Card, prompt: string, groupLabel?: string): Promise<AgentRun> {
 		const run: AgentRun = {
 			id: `${kind}-${card.id}-${Date.now().toString(36)}`,
 			kind,
+			groupLabel,
 			boardUri,
 			card,
 			state: 'queued',

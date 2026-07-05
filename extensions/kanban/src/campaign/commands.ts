@@ -48,11 +48,33 @@ async function pickBoardCard(placeholder: string): Promise<PickedCard | undefine
 	return { boardUri: boardRef.uri, board, cards, card: pickedCard.card };
 }
 
+/** Resolves a (boardUri, cardId) pair passed programmatically (board webview, editor toolbar), falling back to the pickers. */
+async function resolveTarget(boardUri: vscode.Uri | undefined, cardId: string | undefined, placeholder: string): Promise<PickedCard | undefined> {
+	if (boardUri instanceof vscode.Uri && boardUri.fsPath.endsWith('board.json')) {
+		try {
+			const board = parseBoardFile(new TextDecoder().decode(await vscode.workspace.fs.readFile(boardUri)));
+			const cards = await loadCards(boardUri);
+			const known = typeof cardId === 'string' ? cards.find(c => c.id === cardId) : undefined;
+			if (known) {
+				return { boardUri, board, cards, card: known };
+			}
+			// Board known (e.g. editor toolbar) — only the card needs picking
+			const picked = await vscode.window.showQuickPick(
+				cards.map(card => ({ label: card.title, description: `${card.column}${card.priority ? ` · ${card.priority}` : ''}`, detail: card.id, card })),
+				{ placeHolder: placeholder });
+			return picked ? { boardUri, board, cards, card: picked.card } : undefined;
+		} catch {
+			// Fall through to the interactive pickers
+		}
+	}
+	return pickBoardCard(placeholder);
+}
+
 /** Registers the campaign-tier commands. */
 export function registerCampaignCommands(runner: AgentRunner): vscode.Disposable {
 	return vscode.Disposable.from(
-		vscode.commands.registerCommand('kanban.runAgentOnCard', async () => {
-			const picked = await pickBoardCard(vscode.l10n.t('Run an agent on which card?'));
+		vscode.commands.registerCommand('kanban.runAgentOnCard', async (boardUri?: vscode.Uri, cardId?: string) => {
+			const picked = await resolveTarget(boardUri, cardId, vscode.l10n.t('Run an agent on which card?'));
 			if (!picked) {
 				return;
 			}
@@ -64,8 +86,8 @@ export function registerCampaignCommands(runner: AgentRunner): vscode.Disposable
 			void vscode.window.showInformationMessage(vscode.l10n.t('Agent queued for "{0}" — watch the Agents view.', picked.card.title));
 		}),
 
-		vscode.commands.registerCommand('kanban.decomposeCard', async () => {
-			const picked = await pickBoardCard(vscode.l10n.t('Decompose which card into a campaign?'));
+		vscode.commands.registerCommand('kanban.decomposeCard', async (boardUri?: vscode.Uri, cardId?: string) => {
+			const picked = await resolveTarget(boardUri, cardId, vscode.l10n.t('Decompose which card into a campaign?'));
 			if (!picked) {
 				return;
 			}

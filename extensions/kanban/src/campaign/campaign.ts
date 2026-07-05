@@ -122,7 +122,7 @@ export class Campaign {
 		for (const child of toDispatch) {
 			this.dispatched.add(child.id);
 			this.dispatchAttempts++;
-			void this.runner.runOnCard(this.boardUri, snapshot.board, snapshot.cards, child).then(run => {
+			void this.runner.runOnCard(this.boardUri, snapshot.board, snapshot.cards, child, vscode.l10n.t('Campaign: {0}', this.parentCard.title)).then(run => {
 				(run.state === 'done' ? this.completed : this.failed).add(child.id);
 				setTimeout(() => void this.dispatchReady(), DISPATCH_DELAY_MS);
 			});

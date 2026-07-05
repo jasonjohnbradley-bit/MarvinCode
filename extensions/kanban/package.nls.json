@@ -14,6 +14,8 @@
 	"command.jiraPushCard": "Push Card to Jira",
 	"view.boards": "Boards",
 	"view.agents": "Agents",
+	"welcome.boards": "No Kanban boards yet.\n[Create a Board](command:kanban.newBoard)\nBoards are plain files in `.kanban/` folders — agents can edit them too.\n[Connect to Jira](command:kanban.jira.connect)",
+	"welcome.agents": "No agents have run yet.\nRight-click a card on a board (or use the palette) to run a claude agent on it.\n[Run Agent on Card](command:kanban.runAgentOnCard)",
 	"viewContainer.kanban": "Kanban",
 	"configuration.globalBoardsFolder": "Folder that holds your global Kanban boards (each board is a subfolder with a .kanban directory). Global boards are available in every window, regardless of the open workspace.",
 	"tool.listBoards": "List your Kanban boards.",

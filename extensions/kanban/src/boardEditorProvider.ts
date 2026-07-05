@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { addColumnToBoard, createCard, loadBoardState, loadCards, moveCardInBoard, parseBoardFile, serializeBoardFile, setCardColumn } from './boardModel';
+import { addColumnToBoard, createCard, loadBoardState, loadCards, moveCardInBoard, parseBoardFile, serializeBoardFile, setCardColumn, updateCardMeta } from './boardModel';
 import { readJiraConfig } from './jira/config';
 
 /**
@@ -40,7 +40,16 @@ export class BoardEditorProvider implements vscode.CustomTextEditorProvider {
 			updateTimer = setTimeout(async () => {
 				try {
 					const state = await loadBoardState(document.uri, document.getText());
-					webviewPanel.webview.postMessage({ type: 'board', state });
+					// Bodies are only needed for the drawer — cap them so a
+					// big Jira-linked board does not ship megabytes per update
+					const slim = {
+						...state,
+						columns: state.columns.map(column => ({
+							...column,
+							cards: column.cards.map(card => ({ ...card, body: card.body.length > 8192 ? card.body.slice(0, 8192) + '\n\n(truncated — open the card file for the rest)' : card.body }))
+						}))
+					};
+					webviewPanel.webview.postMessage({ type: 'board', state: slim });
 				} catch (error) {
 					webviewPanel.webview.postMessage({ type: 'error', message: String(error) });
 				}
@@ -78,6 +87,45 @@ export class BoardEditorProvider implements vscode.CustomTextEditorProvider {
 							if (config) {
 								await vscode.env.openExternal(vscode.Uri.parse(`${config.host}/browse/${message.key}`));
 							}
+						}
+						break;
+					case 'openExternal':
+						if (typeof message.url === 'string' && /^https?:\/\//.test(message.url)) {
+							await vscode.env.openExternal(vscode.Uri.parse(message.url));
+						}
+						break;
+					case 'copyText':
+						if (typeof message.text === 'string') {
+							await vscode.env.clipboard.writeText(message.text);
+						}
+						break;
+					case 'updateCard': {
+						if (typeof message.cardId !== 'string') {
+							break;
+						}
+						const card = (await loadCards(document.uri)).find(c => c.id === message.cardId);
+						if (card) {
+							await updateCardMeta(card.uri, {
+								title: typeof message.title === 'string' && message.title.trim() ? message.title.trim() : undefined,
+								priority: typeof message.priority === 'string' ? message.priority : undefined,
+								labels: Array.isArray(message.labels) ? message.labels.join(', ') : undefined
+							});
+						}
+						break;
+					}
+					case 'runAgent':
+						if (typeof message.cardId === 'string') {
+							await vscode.commands.executeCommand('kanban.runAgentOnCard', document.uri, message.cardId);
+						}
+						break;
+					case 'decompose':
+						if (typeof message.cardId === 'string') {
+							await vscode.commands.executeCommand('kanban.decomposeCard', document.uri, message.cardId);
+						}
+						break;
+					case 'pushJira':
+						if (typeof message.cardId === 'string') {
+							await vscode.commands.executeCommand('kanban.jira.pushCard', document.uri, message.cardId);
 						}
 						break;
 					case 'moveCard':
@@ -155,13 +203,15 @@ export class BoardEditorProvider implements vscode.CustomTextEditorProvider {
 	private getHtml(webview: vscode.Webview, mediaRoot: vscode.Uri): string {
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(mediaRoot, 'board.js'));
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(mediaRoot, 'board.css'));
+		const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(mediaRoot, 'codicon.css'));
 		const nonce = crypto.randomUUID().replace(/-/g, '');
 		return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="${codiconsUri}" rel="stylesheet">
 	<link href="${styleUri}" rel="stylesheet">
 	<title>Kanban Board</title>
 </head>
