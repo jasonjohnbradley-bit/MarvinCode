@@ -20,6 +20,7 @@ Every upstream (Microsoft) file this fork modifies is listed here, with how to r
 | 5 | `src/vs/workbench/workbench.desktop.main.ts` | One side-effect import of `contrib/agentGraph` in a `// FORK:agentGraph` block | Re-add the marked import at the end of the contrib imports |
 | 6 | `build/filters.ts` | Hygiene exclusions for `contrib/agentGraph/.../media/**` (indentation) and `media/vendor/**` (copyright) in `// FORK:agentGraph` blocks | Re-add the two marked globs |
 | 7 | `src/vs/workbench/contrib/chat/browser/tools/languageModelToolsService.ts` | `IToolFinishedEvent` + `onDidFinishTool` emitter on the concrete class (NOT the interface — avoids mock/test churn); `invokeTool` renamed to private `_doInvokeTool` and wrapped by a try/finally that fires the event. All in `// FORK:agentGraph` blocks | If upstream refactors `invokeTool`, re-apply: rename their method to `_doInvokeTool`, re-add the wrapper + emitter + event interface. ~30 lines total |
+| 8 | `resources/darwin/code.icns` | Replaced with the Token Effort app icon (824px rounded-rect art on 1024 transparent canvas, standard macOS format; regenerate from the source art via ImageMagick + iconutil) | Binary; on conflict always keep ours |
 
 ## Merge procedure (monthly)
 
