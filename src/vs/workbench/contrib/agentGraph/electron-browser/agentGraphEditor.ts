@@ -8,7 +8,6 @@ import { Codicon } from '../../../../base/common/codicons.js';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import { FileAccess } from '../../../../base/common/network.js';
 import { URI } from '../../../../base/common/uri.js';
-import * as nls from '../../../../nls.js';
 import { IAgentGraphService } from '../../../../platform/agentGraph/common/agentGraph.js';
 import { WebviewInput } from '../../webviewPanel/browser/webviewEditorInput.js';
 import { IWebviewWorkbenchService } from '../../webviewPanel/browser/webviewWorkbenchService.js';
@@ -35,7 +34,7 @@ export class AgentGraphEditorManager extends Disposable {
 	}
 
 	async show(): Promise<void> {
-		const title = nls.localize('agentGraph.editorTitle', "Agent Graph");
+		const title = 'Agent Graph';
 		if (this.current) {
 			this.webviewWorkbenchService.revealWebview(this.current, this.editorService.activeEditorPane?.group ?? this.editorGroupService.activeGroup, false);
 			await this.pushData();
@@ -46,7 +45,7 @@ export class AgentGraphEditorManager extends Disposable {
 		this.current = this.webviewWorkbenchService.openWebview(
 			{
 				title,
-				options: { tryRestoreScrollPosition: false, enableFindWidget: false, disableServiceWorker: true },
+				options: { tryRestoreScrollPosition: false, enableFindWidget: false },
 				contentOptions: { localResourceRoots: [mediaRoot], allowScripts: true },
 				extension: undefined
 			},

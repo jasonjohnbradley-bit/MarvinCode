@@ -54,7 +54,7 @@ export class AgentGraphViewPane extends ViewPane {
 
 		const webview = this._register(this.webviewService.createWebviewElement({
 			title: this.title,
-			options: { disableServiceWorker: true },
+			options: {},
 			contentOptions: {
 				allowScripts: true,
 				localResourceRoots: [FileAccess.asFileUri(AGENT_GRAPH_MEDIA_ROOT)]
