@@ -82,7 +82,7 @@ export function mapJiraPriority(name: string | undefined): Priority | undefined 
 	if (/highest|critical|blocker/.test(lower)) {
 		return 'urgent';
 	}
-	if (/high/.test(lower)) {
+	if (/high|major/.test(lower)) {
 		return 'high';
 	}
 	if (/medium|normal/.test(lower)) {
