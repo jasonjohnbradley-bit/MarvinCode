@@ -90,13 +90,49 @@ If the notes contain NO actionable items, create no cards and say so in the hand
 	].join('\n\n');
 }
 
-/** The whole flow: pick board → pick source → parent card → agent run. */
-export async function importMeetingNotes(secrets: vscode.SecretStorage, runner: AgentRunner): Promise<void> {
+/**
+ * Ingests one reMarkable document into tickets: board pick, dedup check,
+ * fetch (embedded PDF or rendered handwriting pages), deterministic parent
+ * card, agent run. Entry point for both the command palette flow and the
+ * reMarkable sidebar.
+ */
+export async function importRemarkableDocument(secrets: vscode.SecretStorage, runner: AgentRunner, doc: RemarkableDoc): Promise<void> {
 	const picked = await pickBoard();
 	if (!picked) {
 		return;
 	}
+	const api = await ensureRemarkable(secrets);
+	if (!api) {
+		return;
+	}
+	const stamp = `${doc.id}@${doc.hash.slice(0, 12)}`;
+	const existing = await findIngestedStamp(picked.uri, doc.id);
+	if (existing) {
+		const again = vscode.l10n.t('Import Again');
+		const answer = await vscode.window.showWarningMessage(
+			existing.stamp === stamp
+				? vscode.l10n.t('"{0}" was already imported (card "{1}") and has not changed since.', doc.name, existing.title)
+				: vscode.l10n.t('"{0}" was imported before (card "{1}") but has changed since.', doc.name, existing.title),
+			again);
+		if (answer !== again) {
+			return;
+		}
+	}
+	const sources = await vscode.window.withProgress(
+		{ location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Fetching "{0}"…', doc.name) },
+		async () => {
+			try {
+				return [await downloadPdf(api, doc)];
+			} catch {
+				// Pure notebook — render the handwriting to page images
+				return renderNotebookPages(api, doc, os.tmpdir());
+			}
+		});
+	await runIngestion(secrets, runner, picked, sources, doc.name, stamp);
+}
 
+/** The whole flow: pick board → pick source → parent card → agent run. */
+export async function importMeetingNotes(secrets: vscode.SecretStorage, runner: AgentRunner): Promise<void> {
 	type SourcePick = vscode.QuickPickItem & { mode: 'cloud' | 'local' };
 	const source = await vscode.window.showQuickPick<SourcePick>([
 		{ label: vscode.l10n.t('From reMarkable'), description: vscode.l10n.t('browse your tablet documents'), mode: 'cloud' },
@@ -105,10 +141,6 @@ export async function importMeetingNotes(secrets: vscode.SecretStorage, runner: 
 	if (!source) {
 		return;
 	}
-
-	let sources: string[];
-	let sourceName: string;
-	let stamp: string | undefined;
 
 	if (source.mode === 'cloud') {
 		const api = await ensureRemarkable(secrets);
@@ -130,55 +162,36 @@ export async function importMeetingNotes(secrets: vscode.SecretStorage, runner: 
 				doc
 			})),
 			{ placeHolder: vscode.l10n.t('Which document holds the meeting notes?'), matchOnDescription: true });
-		if (!pickedDoc) {
-			return;
+		if (pickedDoc) {
+			await importRemarkableDocument(secrets, runner, pickedDoc.doc);
 		}
-		const doc: RemarkableDoc = pickedDoc.doc;
-		stamp = `${doc.id}@${doc.hash.slice(0, 12)}`;
-
-		const existing = await findIngestedStamp(picked.uri, doc.id);
-		if (existing) {
-			const again = vscode.l10n.t('Import Again');
-			const sameVersion = existing.stamp === stamp;
-			const answer = await vscode.window.showWarningMessage(
-				sameVersion
-					? vscode.l10n.t('"{0}" was already imported (card "{1}") and has not changed since.', doc.name, existing.title)
-					: vscode.l10n.t('"{0}" was imported before (card "{1}") but has changed since.', doc.name, existing.title),
-				again);
-			if (answer !== again) {
-				return;
-			}
-		}
-		sources = await vscode.window.withProgress(
-			{ location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Fetching "{0}"…', doc.name) },
-			async () => {
-				try {
-					return [await downloadPdf(api, doc)];
-				} catch {
-					// Pure notebook — render the handwriting to page images
-					return renderNotebookPages(api, doc, os.tmpdir());
-				}
-			});
-		sourceName = doc.name;
-	} else {
-		const files = await vscode.window.showOpenDialog({
-			canSelectMany: false,
-			filters: { 'PDF': ['pdf'] },
-			title: vscode.l10n.t('Pick the meeting notes PDF')
-		});
-		if (!files?.length) {
-			return;
-		}
-		sources = [files[0].fsPath];
-		sourceName = files[0].path.split('/').pop() ?? 'notes.pdf';
+		return;
 	}
+
+	const picked = await pickBoard();
+	if (!picked) {
+		return;
+	}
+	const files = await vscode.window.showOpenDialog({
+		canSelectMany: false,
+		filters: { 'PDF': ['pdf'] },
+		title: vscode.l10n.t('Pick the meeting notes PDF')
+	});
+	if (!files?.length) {
+		return;
+	}
+	await runIngestion(secrets, runner, picked, [files[0].fsPath], files[0].path.split('/').pop() ?? 'notes.pdf', undefined);
+}
+
+/** Creates the parent Meeting card and dispatches the extraction agent. */
+async function runIngestion(_secrets: vscode.SecretStorage, runner: AgentRunner, picked: PickedBoard, sources: string[], sourceName: string, stamp: string | undefined): Promise<void> {
 
 	// Deterministic parent card; the agent creates the children
 	const firstColumn = picked.board.columns[0]?.id ?? 'todo';
 	const title = vscode.l10n.t('Meeting: {0}', sourceName.replace(/\.pdf$/i, ''));
 	const parentId = await createCard(picked.uri, firstColumn, title, {
 		labels: ['meeting'],
-		body: `Imported from ${source.mode === 'cloud' ? 'reMarkable' : 'PDF'}: ${sourceName}\n`
+		body: `Imported from ${stamp ? 'reMarkable' : 'PDF'}: ${sourceName}\n`
 	});
 	const freshBoard = parseBoardFile(new TextDecoder().decode(await vscode.workspace.fs.readFile(picked.uri)));
 	await writeBoardFile(picked.uri, { ...freshBoard, order: { ...freshBoard.order, [firstColumn]: [...(freshBoard.order[firstColumn] ?? []), parentId] } });

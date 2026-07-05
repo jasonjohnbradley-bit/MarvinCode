@@ -14,6 +14,7 @@ import { CardDecorationProvider } from './cardDecorations';
 import { registerJiraCommands } from './jira/commands';
 import { pairRemarkable } from './remarkable/client';
 import { importMeetingNotes } from './remarkable/ingest';
+import { NotebooksViewProvider } from './remarkable/notebooksViewProvider';
 import { registerStatusBar } from './statusBar';
 import { registerKanbanTools } from './tools';
 
@@ -30,5 +31,6 @@ export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(registerJiraCommands(context));
 	context.subscriptions.push(vscode.commands.registerCommand('kanban.remarkable.connect', () => pairRemarkable(context.secrets)));
 	context.subscriptions.push(vscode.commands.registerCommand('kanban.remarkable.import', () => importMeetingNotes(context.secrets, runner)));
+	context.subscriptions.push(NotebooksViewProvider.register(context, runner));
 	context.subscriptions.push(registerKanbanTools(context.secrets));
 }
