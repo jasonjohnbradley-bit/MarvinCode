@@ -4,9 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { addCardLink, appendHandoff, BoardFile, Card, createCard, discoverBoards, doneColumnId, LinkType, LINK_TYPES, loadCards, moveCardInBoard, parseBoardFile, PRIORITIES, Priority, readyCards, serializeBoardFile, setCardColumn, updateCardMeta, wouldCreateCycle } from './boardModel';
+import { addCardLink, appendHandoff, BoardFile, Card, createCard, discoverBoards, doneColumnId, LinkType, LINK_TYPES, loadCards, moveCardInBoard, parseBoardFile, PRIORITIES, Priority, readyCards, setCardColumn, updateCardMeta, wouldCreateCycle, writeBoardFile } from './boardModel';
+import { buildCoordinatorPrompt } from './campaign/coordinatorPrompt';
+import { buildCardContext } from './cardContext';
 
-interface ResolvedBoard {
+export interface ResolvedBoard {
 	readonly uri: vscode.Uri;
 	readonly board: BoardFile;
 	readonly cards: Card[];
@@ -16,7 +18,7 @@ interface ResolvedBoard {
  * Resolves the `board` tool argument — a board.json path as returned by
  * kanban_list_boards, or a board name when unambiguous.
  */
-async function resolveBoard(boardParam: string): Promise<ResolvedBoard> {
+export async function resolveBoard(boardParam: string): Promise<ResolvedBoard> {
 	const boards = await discoverBoards();
 	const match = boards.find(board => board.uri.fsPath === boardParam || board.uri.toString() === boardParam)
 		?? boards.find(board => board.name === boardParam);
@@ -27,7 +29,7 @@ async function resolveBoard(boardParam: string): Promise<ResolvedBoard> {
 	return { uri: match.uri, board: parseBoardFile(text), cards: await loadCards(match.uri) };
 }
 
-function requireCard(resolved: ResolvedBoard, cardId: string): Card {
+export function requireCard(resolved: ResolvedBoard, cardId: string): Card {
 	const card = resolved.cards.find(c => c.id === cardId);
 	if (!card) {
 		throw new Error(`Card not found: ${cardId}. Use kanban_list_cards to see the board's cards.`);
@@ -40,10 +42,6 @@ function requireColumn(resolved: ResolvedBoard, columnId: string): void {
 		const available = resolved.board.columns.map(column => column.id).join(', ');
 		throw new Error(`Column not found: ${columnId}. Available columns: ${available}`);
 	}
-}
-
-async function writeBoardFile(uri: vscode.Uri, board: BoardFile): Promise<void> {
-	await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(serializeBoardFile(board)));
 }
 
 function cardSummary(card: Card, blocked?: boolean): Record<string, unknown> {
@@ -180,33 +178,13 @@ export function registerKanbanTools(): vscode.Disposable {
 		tool<{ board: string; cardId: string }>('kanban_get_card_context', async input => {
 			const resolved = await resolveBoard(input.board);
 			const card = requireCard(resolved, input.cardId);
-			const byId = new Map(resolved.cards.map(c => [c.id, c]));
-			const doneColumn = doneColumnId(resolved.board);
-			const lines = [
-				`# Card ${card.id}: ${card.title}`,
-				`- Column: ${card.column}${card.column === doneColumn ? ' (done)' : ''}`,
-				card.priority ? `- Priority: ${card.priority}` : undefined,
-				card.labels.length ? `- Labels: ${card.labels.join(', ')}` : undefined,
-				card.sessions.length ? `- Agent sessions: ${card.sessions.join(', ')}` : undefined
-			].filter((line): line is string => !!line);
+			return textResult(buildCardContext(resolved.board, resolved.cards, card));
+		}, vscode.l10n.t('Reading Kanban card context')),
 
-			const inbound = resolved.cards.flatMap(other =>
-				other.links.filter(link => link.target === card.id).map(link => ({ other, link })));
-			if (card.links.length || inbound.length) {
-				lines.push('', '## Links');
-				for (const link of card.links) {
-					const target = byId.get(link.target);
-					lines.push(`- This card ${link.type === 'parent' ? 'has parent' : link.type === 'blocking' ? 'blocks' : 'relates to'} ${link.target}${target ? ` ("${target.title}", ${target.column})` : ' (missing)'}`);
-				}
-				for (const { other, link } of inbound) {
-					lines.push(`- ${other.id} ("${other.title}", ${other.column}) ${link.type === 'parent' ? 'is parented to' : link.type === 'blocking' ? 'blocks' : 'relates to'} this card`);
-				}
-			}
-
-			if (card.body.trim()) {
-				lines.push('', '## Card body', '', card.body.trim());
-			}
-			return textResult(lines.join('\n'));
-		}, vscode.l10n.t('Reading Kanban card context'))
+		tool<{ board: string; cardId: string; instructions?: string }>('kanban_start_coordinator', async input => {
+			const resolved = await resolveBoard(input.board);
+			const card = requireCard(resolved, input.cardId);
+			return textResult(buildCoordinatorPrompt(resolved.uri, resolved.board, resolved.cards, card, 'chat-tools', input.instructions));
+		}, vscode.l10n.t('Starting Kanban coordinator'))
 	);
 }

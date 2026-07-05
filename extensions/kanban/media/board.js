@@ -53,9 +53,15 @@
 		cardEl.dataset.cardId = card.id;
 		cardEl.appendChild(el('div', 'card-title', card.title));
 		const hasChips = card.labels.length || (card.sessions && card.sessions.length)
-			|| card.priority || card.blocked || card.handoffCount || (card.links && card.links.length);
+			|| card.priority || card.blocked || card.handoffCount || (card.links && card.links.length)
+			|| card.agentStatus;
 		if (hasChips) {
 			const labelsEl = el('div', 'card-labels');
+			if (card.agentStatus) {
+				const chip = el('span', `card-label card-agent agent-${card.agentStatus}`, card.agentStatus === 'running' ? 'agent running' : 'agent failed');
+				chip.title = card.agentStatus === 'running' ? 'An agent is working on this card' : 'The last agent run on this card failed — see its handoff note';
+				labelsEl.appendChild(chip);
+			}
 			if (card.priority) {
 				labelsEl.appendChild(el('span', `card-label card-priority priority-${card.priority}`, card.priority));
 			}

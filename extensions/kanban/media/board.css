@@ -138,6 +138,24 @@ body {
 	opacity: 0.85;
 }
 
+.agent-running {
+	background-color: transparent;
+	border: 1px solid var(--vscode-charts-orange, #9c5039);
+	color: var(--vscode-charts-orange, #9c5039);
+	animation: agent-pulse 1.6s ease-in-out infinite;
+}
+
+.agent-failed {
+	background-color: var(--vscode-errorForeground, #e34524);
+	color: var(--vscode-editor-background);
+}
+
+@keyframes agent-pulse {
+	50% {
+		opacity: 0.45;
+	}
+}
+
 .card.dragging {
 	opacity: 0.4;
 }

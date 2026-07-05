@@ -30,6 +30,9 @@ export interface CardLink {
 	readonly target: string;
 }
 
+export const AGENT_STATUSES = ['running', 'failed'] as const;
+export type AgentStatus = typeof AGENT_STATUSES[number];
+
 export interface Card {
 	readonly id: string;
 	readonly title: string;
@@ -39,6 +42,7 @@ export interface Card {
 	readonly links: readonly CardLink[];
 	readonly sessions: readonly string[];
 	readonly handoffCount: number;
+	readonly agentStatus: AgentStatus | undefined;
 	readonly body: string;
 	readonly fileName: string;
 	readonly uri: vscode.Uri;
@@ -221,6 +225,7 @@ export async function loadCards(boardUri: vscode.Uri): Promise<Card[]> {
 				links: parseLinks(meta['links']),
 				sessions: meta['sessions'] ? meta['sessions'].split(',').map(id => id.trim()).filter(id => id.length > 0) : [],
 				handoffCount: countHandoffs(body),
+				agentStatus: (AGENT_STATUSES as readonly string[]).includes(meta['agentStatus']) ? meta['agentStatus'] as AgentStatus : undefined,
 				body,
 				fileName,
 				uri
@@ -291,6 +296,23 @@ export function addColumnToBoard(board: BoardFile, title: string): BoardFile {
 
 export function serializeBoardFile(board: BoardFile): string {
 	return JSON.stringify(board, null, '\t') + '\n';
+}
+
+export async function writeBoardFile(boardUri: vscode.Uri, board: BoardFile): Promise<void> {
+	await vscode.workspace.fs.writeFile(boardUri, new TextEncoder().encode(serializeBoardFile(board)));
+}
+
+/** Appends a session id to a card's `sessions:` front-matter (deduplicated). */
+export async function appendCardSession(cardUri: vscode.Uri, sessionId: string): Promise<void> {
+	const bytes = await vscode.workspace.fs.readFile(cardUri);
+	const { meta, body } = parseFrontMatter(new TextDecoder().decode(bytes));
+	const sessions = meta['sessions'] ? meta['sessions'].split(',').map(id => id.trim()).filter(id => id.length > 0) : [];
+	if (sessions.includes(sessionId)) {
+		return;
+	}
+	sessions.push(sessionId);
+	meta['sessions'] = sessions.join(', ');
+	await vscode.workspace.fs.writeFile(cardUri, new TextEncoder().encode(serializeFrontMatter(meta, body)));
 }
 
 /** Rewrites a card file's front-matter to place it in the given column. */

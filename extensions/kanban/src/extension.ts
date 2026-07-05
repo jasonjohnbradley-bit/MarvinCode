@@ -7,11 +7,18 @@ import * as vscode from 'vscode';
 import { BoardEditorProvider } from './boardEditorProvider';
 import { scaffoldBoard } from './boardModel';
 import { BoardsViewProvider } from './boardsViewProvider';
+import { AgentRunner } from './campaign/agentRunner';
+import { AgentsViewProvider } from './campaign/agentsViewProvider';
+import { registerCampaignCommands } from './campaign/commands';
 import { registerKanbanTools } from './tools';
 
 export function activate(context: vscode.ExtensionContext): void {
+	const runner = new AgentRunner();
+	context.subscriptions.push(runner);
 	context.subscriptions.push(BoardEditorProvider.register(context));
 	context.subscriptions.push(BoardsViewProvider.register());
+	context.subscriptions.push(AgentsViewProvider.register(runner));
 	context.subscriptions.push(vscode.commands.registerCommand('kanban.newBoard', () => scaffoldBoard()));
+	context.subscriptions.push(registerCampaignCommands(runner));
 	context.subscriptions.push(registerKanbanTools());
 }

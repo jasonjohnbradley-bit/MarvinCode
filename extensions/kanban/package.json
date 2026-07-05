@@ -47,6 +47,27 @@
 				"title": "%command.refreshBoards%",
 				"category": "Kanban",
 				"icon": "$(refresh)"
+			},
+			{
+				"command": "kanban.runAgentOnCard",
+				"title": "%command.runAgentOnCard%",
+				"category": "Kanban"
+			},
+			{
+				"command": "kanban.decomposeCard",
+				"title": "%command.decomposeCard%",
+				"category": "Kanban"
+			},
+			{
+				"command": "kanban.runCampaign",
+				"title": "%command.runCampaign%",
+				"category": "Kanban"
+			},
+			{
+				"command": "kanban.killAgent",
+				"title": "%command.killAgent%",
+				"category": "Kanban",
+				"icon": "$(stop-circle)"
 			}
 		],
 		"viewsContainers": {
@@ -63,6 +84,10 @@
 				{
 					"id": "kanban.boards",
 					"name": "%view.boards%"
+				},
+				{
+					"id": "kanban.agents",
+					"name": "%view.agents%"
 				}
 			]
 		},
@@ -78,6 +103,19 @@
 					"when": "view == kanban.boards",
 					"group": "navigation"
 				}
+			],
+			"view/item/context": [
+				{
+					"command": "kanban.killAgent",
+					"when": "view == kanban.agents && viewItem == kanbanAgentRunning",
+					"group": "inline"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "kanban.killAgent",
+					"when": "false"
+				}
 			]
 		},
 		"configuration": [
@@ -88,6 +126,29 @@
 						"type": "string",
 						"default": "~/kanban",
 						"description": "%configuration.globalBoardsFolder%"
+					},
+					"kanban.agents.maxConcurrent": {
+						"type": "number",
+						"default": 2,
+						"minimum": 1,
+						"maximum": 8,
+						"description": "%configuration.agentsMaxConcurrent%"
+					},
+					"kanban.agents.useWorktrees": {
+						"type": "boolean",
+						"default": true,
+						"description": "%configuration.agentsUseWorktrees%"
+					},
+					"kanban.campaign.requireApproval": {
+						"type": "boolean",
+						"default": true,
+						"description": "%configuration.campaignRequireApproval%"
+					},
+					"kanban.campaign.timeoutMinutes": {
+						"type": "number",
+						"default": 30,
+						"minimum": 1,
+						"description": "%configuration.campaignTimeoutMinutes%"
 					}
 				}
 			}
@@ -212,6 +273,23 @@
 						"nextSteps": { "type": "string", "description": "What should happen next." },
 						"blockers": { "type": "string", "description": "What is blocking progress." },
 						"note": { "type": "string", "description": "Free-form additional context." }
+					}
+				}
+			},
+			{
+				"name": "kanban_start_coordinator",
+				"displayName": "Start Kanban Coordinator",
+				"toolReferenceName": "kanbanCoordinator",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Returns the coordinator (DM) decomposition prompt for a parent card. Call this when asked to break a card/feature into a campaign of sub-cards, then FOLLOW the returned instructions using the other kanban tools (create sub-cards, link them, add handoffs, append the verification card).",
+				"userDescription": "%tool.startCoordinator%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board", "cardId"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
+						"cardId": { "type": "string", "description": "Id of the parent card to decompose." },
+						"instructions": { "type": "string", "description": "Optional extra instructions for this decomposition run." }
 					}
 				}
 			},

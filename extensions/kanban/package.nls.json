@@ -4,7 +4,12 @@
 	"customEditors.displayName": "Kanban Board",
 	"command.newBoard": "New Board",
 	"command.refreshBoards": "Refresh Boards",
+	"command.runAgentOnCard": "Run Agent on Card",
+	"command.decomposeCard": "Decompose Card into Campaign (DM)",
+	"command.runCampaign": "Run Campaign",
+	"command.killAgent": "Kill Agent",
 	"view.boards": "Boards",
+	"view.agents": "Agents",
 	"viewContainer.kanban": "Kanban",
 	"configuration.globalBoardsFolder": "Folder that holds your global Kanban boards (each board is a subfolder with a .kanban directory). Global boards are available in every window, regardless of the open workspace.",
 	"tool.listBoards": "List your Kanban boards.",
@@ -14,5 +19,10 @@
 	"tool.linkCards": "Link two cards (blocking, related or parent).",
 	"tool.readyCards": "List the cards that are ready to work on.",
 	"tool.addHandoff": "Add a handoff note to a card.",
-	"tool.cardContext": "Get a card's full context as a resume prompt."
+	"tool.cardContext": "Get a card's full context as a resume prompt.",
+	"tool.startCoordinator": "Decompose a card into a campaign of sub-cards.",
+	"configuration.agentsMaxConcurrent": "Maximum number of card agents running at the same time.",
+	"configuration.agentsUseWorktrees": "Run each card agent in its own git worktree (branch card/<id>) when the board lives in a git repository.",
+	"configuration.campaignRequireApproval": "Ask for confirmation before a campaign dispatches agents.",
+	"configuration.campaignTimeoutMinutes": "Safety timeout for a campaign, in minutes."
 }
