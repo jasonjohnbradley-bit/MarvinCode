@@ -43,6 +43,9 @@ export interface Card {
 	readonly sessions: readonly string[];
 	readonly handoffCount: number;
 	readonly agentStatus: AgentStatus | undefined;
+	readonly jira: string | undefined;
+	readonly jiraUpdated: string | undefined;
+	readonly updated: string | undefined;
 	readonly body: string;
 	readonly fileName: string;
 	readonly uri: vscode.Uri;
@@ -226,6 +229,9 @@ export async function loadCards(boardUri: vscode.Uri): Promise<Card[]> {
 				sessions: meta['sessions'] ? meta['sessions'].split(',').map(id => id.trim()).filter(id => id.length > 0) : [],
 				handoffCount: countHandoffs(body),
 				agentStatus: (AGENT_STATUSES as readonly string[]).includes(meta['agentStatus']) ? meta['agentStatus'] as AgentStatus : undefined,
+				jira: meta['jira'] || undefined,
+				jiraUpdated: meta['jiraUpdated'] || undefined,
+				updated: meta['updated'] || undefined,
 				body,
 				fileName,
 				uri

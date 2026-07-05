@@ -5,6 +5,7 @@
 
 import * as vscode from 'vscode';
 import { addColumnToBoard, createCard, loadBoardState, loadCards, moveCardInBoard, parseBoardFile, serializeBoardFile, setCardColumn } from './boardModel';
+import { readJiraConfig } from './jira/config';
 
 /**
  * Renders `.kanban/board.json` as an interactive board. Backing the editor
@@ -69,6 +70,14 @@ export class BoardEditorProvider implements vscode.CustomTextEditorProvider {
 					case 'openCard':
 						if (typeof message.fileName === 'string' && /^[\w.-]+\.md$/.test(message.fileName)) {
 							await vscode.commands.executeCommand('vscode.open', vscode.Uri.joinPath(boardDir, 'cards', message.fileName));
+						}
+						break;
+					case 'openJira':
+						if (typeof message.key === 'string' && /^[A-Z][A-Z0-9]*-\d+$/.test(message.key)) {
+							const config = await readJiraConfig(document.uri);
+							if (config) {
+								await vscode.env.openExternal(vscode.Uri.parse(`${config.host}/browse/${message.key}`));
+							}
 						}
 						break;
 					case 'moveCard':

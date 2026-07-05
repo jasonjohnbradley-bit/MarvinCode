@@ -54,7 +54,7 @@
 		cardEl.appendChild(el('div', 'card-title', card.title));
 		const hasChips = card.labels.length || (card.sessions && card.sessions.length)
 			|| card.priority || card.blocked || card.handoffCount || (card.links && card.links.length)
-			|| card.agentStatus;
+			|| card.agentStatus || card.jira;
 		if (hasChips) {
 			const labelsEl = el('div', 'card-labels');
 			if (card.agentStatus) {
@@ -64,6 +64,15 @@
 			}
 			if (card.priority) {
 				labelsEl.appendChild(el('span', `card-label card-priority priority-${card.priority}`, card.priority));
+			}
+			if (card.jira) {
+				const chip = el('span', 'card-label card-jira', card.jira);
+				chip.title = 'Open in Jira';
+				chip.addEventListener('click', e => {
+					e.stopPropagation();
+					vscode.postMessage({ type: 'openJira', key: card.jira });
+				});
+				labelsEl.appendChild(chip);
 			}
 			if (card.blocked) {
 				const chip = el('span', 'card-label card-blocked', 'blocked');

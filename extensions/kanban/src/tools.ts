@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import { addCardLink, appendHandoff, BoardFile, Card, createCard, discoverBoards, doneColumnId, LinkType, LINK_TYPES, loadCards, moveCardInBoard, parseBoardFile, PRIORITIES, Priority, readyCards, setCardColumn, updateCardMeta, wouldCreateCycle, writeBoardFile } from './boardModel';
 import { buildCoordinatorPrompt } from './campaign/coordinatorPrompt';
 import { buildCardContext } from './cardContext';
+import { syncBoardHeadless } from './jira/sync';
 
 export interface ResolvedBoard {
 	readonly uri: vscode.Uri;
@@ -76,7 +77,7 @@ function tool<T>(name: string, invoke: (input: T) => Promise<vscode.LanguageMode
 }
 
 /** Registers the kanban_* language-model tools the built-in agent uses to work boards. */
-export function registerKanbanTools(): vscode.Disposable {
+export function registerKanbanTools(secrets: vscode.SecretStorage): vscode.Disposable {
 	return vscode.Disposable.from(
 		tool<Record<string, never>>('kanban_list_boards', async () => {
 			const boards = await discoverBoards();
@@ -185,6 +186,12 @@ export function registerKanbanTools(): vscode.Disposable {
 			const resolved = await resolveBoard(input.board);
 			const card = requireCard(resolved, input.cardId);
 			return textResult(buildCoordinatorPrompt(resolved.uri, resolved.board, resolved.cards, card, 'chat-tools', input.instructions));
-		}, vscode.l10n.t('Starting Kanban coordinator'))
+		}, vscode.l10n.t('Starting Kanban coordinator')),
+
+		tool<{ board: string }>('kanban_sync_jira', async input => {
+			const resolved = await resolveBoard(input.board);
+			const summary = await syncBoardHeadless(secrets, resolved.uri);
+			return jsonResult(summary);
+		}, vscode.l10n.t('Syncing Kanban board with Jira'))
 	);
 }

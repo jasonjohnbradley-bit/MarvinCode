@@ -10,6 +10,7 @@ import { BoardsViewProvider } from './boardsViewProvider';
 import { AgentRunner } from './campaign/agentRunner';
 import { AgentsViewProvider } from './campaign/agentsViewProvider';
 import { registerCampaignCommands } from './campaign/commands';
+import { registerJiraCommands } from './jira/commands';
 import { registerKanbanTools } from './tools';
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -20,5 +21,6 @@ export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(AgentsViewProvider.register(runner));
 	context.subscriptions.push(vscode.commands.registerCommand('kanban.newBoard', () => scaffoldBoard()));
 	context.subscriptions.push(registerCampaignCommands(runner));
-	context.subscriptions.push(registerKanbanTools());
+	context.subscriptions.push(registerJiraCommands(context));
+	context.subscriptions.push(registerKanbanTools(context.secrets));
 }

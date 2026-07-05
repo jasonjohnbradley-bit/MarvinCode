@@ -138,6 +138,17 @@ body {
 	opacity: 0.85;
 }
 
+.card-jira {
+	background-color: transparent;
+	border: 1px solid var(--vscode-charts-blue, #6fa08a);
+	color: var(--vscode-charts-blue, #6fa08a);
+	cursor: pointer;
+}
+
+.card-jira:hover {
+	background-color: var(--vscode-toolbar-hoverBackground);
+}
+
 .agent-running {
 	background-color: transparent;
 	border: 1px solid var(--vscode-charts-orange, #9c5039);

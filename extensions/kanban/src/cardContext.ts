@@ -19,6 +19,7 @@ export function buildCardContext(board: BoardFile, cards: readonly Card[], card:
 		`- Column: ${card.column}${card.column === doneColumn ? ' (done)' : ''}`,
 		card.priority ? `- Priority: ${card.priority}` : undefined,
 		card.labels.length ? `- Labels: ${card.labels.join(', ')}` : undefined,
+		card.jira ? `- Jira issue: ${card.jira} (reference this key in commits and handoffs)` : undefined,
 		card.sessions.length ? `- Agent sessions: ${card.sessions.join(', ')}` : undefined
 	].filter((line): line is string => !!line);
 

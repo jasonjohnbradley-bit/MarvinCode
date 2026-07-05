@@ -8,6 +8,10 @@
 	"command.decomposeCard": "Decompose Card into Campaign (DM)",
 	"command.runCampaign": "Run Campaign",
 	"command.killAgent": "Kill Agent",
+	"command.jiraConnect": "Connect to Jira",
+	"command.jiraLinkBoard": "Link Board to Jira",
+	"command.jiraSync": "Sync Board with Jira",
+	"command.jiraPushCard": "Push Card to Jira",
 	"view.boards": "Boards",
 	"view.agents": "Agents",
 	"viewContainer.kanban": "Kanban",
@@ -24,5 +28,7 @@
 	"configuration.agentsMaxConcurrent": "Maximum number of card agents running at the same time.",
 	"configuration.agentsUseWorktrees": "Run each card agent in its own git worktree (branch card/<id>) when the board lives in a git repository.",
 	"configuration.campaignRequireApproval": "Ask for confirmation before a campaign dispatches agents.",
-	"configuration.campaignTimeoutMinutes": "Safety timeout for a campaign, in minutes."
+	"configuration.campaignTimeoutMinutes": "Safety timeout for a campaign, in minutes.",
+	"configuration.jiraPollMinutes": "Automatically run a safe (non-conflicting) Jira sync for linked boards every N minutes. 0 disables polling.",
+	"tool.syncJira": "Sync a board with its linked Jira project."
 }

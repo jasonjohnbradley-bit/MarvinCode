@@ -68,6 +68,26 @@
 				"title": "%command.killAgent%",
 				"category": "Kanban",
 				"icon": "$(stop-circle)"
+			},
+			{
+				"command": "kanban.jira.connect",
+				"title": "%command.jiraConnect%",
+				"category": "Kanban"
+			},
+			{
+				"command": "kanban.jira.linkBoard",
+				"title": "%command.jiraLinkBoard%",
+				"category": "Kanban"
+			},
+			{
+				"command": "kanban.jira.sync",
+				"title": "%command.jiraSync%",
+				"category": "Kanban"
+			},
+			{
+				"command": "kanban.jira.pushCard",
+				"title": "%command.jiraPushCard%",
+				"category": "Kanban"
 			}
 		],
 		"viewsContainers": {
@@ -149,6 +169,12 @@
 						"default": 30,
 						"minimum": 1,
 						"description": "%configuration.campaignTimeoutMinutes%"
+					},
+					"kanban.jira.pollMinutes": {
+						"type": "number",
+						"default": 0,
+						"minimum": 0,
+						"description": "%configuration.jiraPollMinutes%"
 					}
 				}
 			}
@@ -290,6 +316,21 @@
 						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." },
 						"cardId": { "type": "string", "description": "Id of the parent card to decompose." },
 						"instructions": { "type": "string", "description": "Optional extra instructions for this decomposition run." }
+					}
+				}
+			},
+			{
+				"name": "kanban_sync_jira",
+				"displayName": "Sync Kanban Board with Jira",
+				"toolReferenceName": "kanbanSyncJira",
+				"canBeReferencedInPrompt": true,
+				"modelDescription": "Syncs a Jira-linked board with its Jira project: pulls new/updated issues in as cards and pushes card moves/edits back as transitions and field updates. Applies only safe, non-conflicting changes; conflicting rows are reported back for a human to resolve. Returns a JSON summary.",
+				"userDescription": "%tool.syncJira%",
+				"inputSchema": {
+					"type": "object",
+					"required": ["board"],
+					"properties": {
+						"board": { "type": "string", "description": "Board path (from kanban_list_boards) or board name." }
 					}
 				}
 			},
