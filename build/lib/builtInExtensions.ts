@@ -73,6 +73,14 @@ function getExtensionDownloadStream(extension: IExtensionDefinition) {
 
 	if (extension.vsix) {
 		input = ext.fromVsix(path.join(root, extension.vsix), extension);
+		// FORK:agentGraph begin
+		// This fork points `extensionsGallery` at Open VSX so users can install
+		// extensions, but Open VSX does not host Microsoft's built-ins (js-debug
+		// and friends). Prefer the GitHub release whenever the extension declares
+		// a repo, which is how OSS builds sourced these before a gallery existed.
+	} else if (extension.repo) {
+		input = ext.fromGithub(extension);
+		// FORK:agentGraph end
 	} else if (productjson.extensionsGallery?.serviceUrl) {
 		input = ext.fromMarketplace(productjson.extensionsGallery.serviceUrl, extension);
 	} else {

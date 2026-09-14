@@ -26,13 +26,54 @@ export interface RemarkableDoc {
 let cachedToken: string | undefined;
 let cachedApi: RemarkableApi | undefined;
 
-async function getApi(deviceToken: string): Promise<RemarkableApi> {
-	if (cachedApi && cachedToken === deviceToken) {
-		return cachedApi;
-	}
+/** reMarkable session (user) tokens expire after a few hours. */
+function isTokenExpired(error: unknown): boolean {
+	const message = error instanceof Error ? error.message : String(error);
+	return /token is expired|token expired|\b401\b|unauthorized/i.test(message);
+}
+
+async function freshApi(deviceToken: string): Promise<RemarkableApi> {
 	cachedApi = await remarkable(deviceToken);
 	cachedToken = deviceToken;
 	return cachedApi;
+}
+
+/**
+ * Wraps the api so every method call transparently refreshes the session and
+ * retries once when the cached user token has expired — long-running windows
+ * would otherwise fail every request until restart.
+ */
+function withTokenRefresh(deviceToken: string): RemarkableApi {
+	const target = cachedApi!;
+	return new Proxy(target, {
+		get(_target, prop) {
+			const current = (cachedApi ?? _target) as unknown as Record<PropertyKey, unknown>;
+			// No receiver: getters must run with `this` bound to the real
+			// instance, or private-field access inside rmapi-js throws.
+			const value = Reflect.get(current, prop);
+			if (typeof value !== 'function') {
+				return value;
+			}
+			return async (...args: unknown[]) => {
+				try {
+					return await (value as (...a: unknown[]) => unknown).apply(current, args);
+				} catch (error) {
+					if (!isTokenExpired(error)) {
+						throw error;
+					}
+					const renewed = await freshApi(deviceToken) as unknown as Record<PropertyKey, unknown>;
+					return (renewed[prop] as (...a: unknown[]) => unknown).apply(renewed, args);
+				}
+			};
+		}
+	});
+}
+
+async function getApi(deviceToken: string): Promise<RemarkableApi> {
+	if (!cachedApi || cachedToken !== deviceToken) {
+		await freshApi(deviceToken);
+	}
+	return withTokenRefresh(deviceToken);
 }
 
 /** Migrates the device token from the old agentic-kanban profile, if present. */

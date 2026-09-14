@@ -1,0 +1,622 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.launchdarkly-management-editor {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+
+.launchdarkly-management-editor .management-split-view {
+	flex: 1;
+	overflow: hidden;
+}
+
+/* Sidebar */
+
+.launchdarkly-management-editor .management-sidebar {
+	height: 100%;
+	background-color: var(--vscode-sideBar-background);
+	border-right: 1px solid var(--vscode-sideBar-border, transparent);
+}
+
+.launchdarkly-management-editor .sidebar-content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 4px;
+	box-sizing: border-box;
+}
+
+.launchdarkly-management-editor .sidebar-header {
+	font-weight: 600;
+	padding: 8px 10px 6px;
+	opacity: 0.9;
+	text-transform: uppercase;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+}
+
+.launchdarkly-management-editor .sidebar-sections-list {
+	flex: 1;
+}
+
+.launchdarkly-management-editor .launchdarkly-section-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 10px;
+	height: 100%;
+	cursor: pointer;
+}
+
+.launchdarkly-management-editor .launchdarkly-section-item .section-icon {
+	flex: 0 0 auto;
+	opacity: 0.9;
+}
+
+.launchdarkly-management-editor .launchdarkly-section-item .section-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Content */
+
+.launchdarkly-management-editor .management-content {
+	height: 100%;
+	background-color: var(--vscode-editor-background);
+}
+
+.launchdarkly-management-editor .content-inner {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 8px 8px 0;
+	box-sizing: border-box;
+}
+
+.launchdarkly-management-editor .content-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 4px 8px 8px;
+	border-bottom: 1px solid var(--vscode-editorGroup-border, transparent);
+}
+
+.launchdarkly-management-editor .content-title {
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.launchdarkly-management-editor .content-toolbar .monaco-action-bar .action-item {
+	margin-left: 4px;
+}
+
+.launchdarkly-management-editor .content-list {
+	flex: 1;
+	overflow: hidden;
+}
+
+/* Rows */
+
+.launchdarkly-management-editor .launchdarkly-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 100%;
+	padding: 0 10px;
+	box-sizing: border-box;
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-icon {
+	flex: 0 0 auto;
+	opacity: 0.85;
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-text {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-description {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	opacity: 0.7;
+	font-size: 11px;
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-status {
+	flex: 0 0 auto;
+	font-size: 11px;
+	padding: 1px 8px;
+	border-radius: 10px;
+	background-color: var(--vscode-badge-background);
+	color: var(--vscode-badge-foreground);
+	opacity: 0.9;
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-status.on {
+	background-color: var(--vscode-testing-iconPassed, var(--vscode-charts-green));
+	color: var(--vscode-editor-background);
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-status.off {
+	background-color: var(--vscode-input-background);
+	color: var(--vscode-descriptionForeground);
+}
+
+.launchdarkly-management-editor .launchdarkly-row .row-actions {
+	flex: 0 0 auto;
+	opacity: 0;
+}
+
+.launchdarkly-management-editor .launchdarkly-row:hover .row-actions,
+.launchdarkly-management-editor .monaco-list-row.focused .launchdarkly-row .row-actions {
+	opacity: 1;
+}
+
+/* Notice / empty state */
+
+.launchdarkly-management-editor .content-notice {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	flex: 1;
+	text-align: center;
+	padding: 24px;
+}
+
+.launchdarkly-management-editor .content-notice .notice-title {
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.launchdarkly-management-editor .content-notice .notice-body {
+	max-width: 460px;
+	opacity: 0.8;
+}
+
+.launchdarkly-management-editor .content-notice .notice-actions {
+	display: flex;
+	gap: 16px;
+	margin-top: 8px;
+}
+
+.launchdarkly-management-editor .content-notice .notice-link {
+	color: var(--vscode-textLink-foreground);
+	cursor: pointer;
+}
+
+.launchdarkly-management-editor .content-notice .notice-link:hover {
+	color: var(--vscode-textLink-activeForeground);
+	text-decoration: underline;
+}
+
+/* Activity Bar sidebar view */
+
+.launchdarkly-view .launchdarkly-view-body {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px 12px 12px;
+}
+
+.launchdarkly-view .ld-view-desc {
+	opacity: 0.8;
+	line-height: 1.4;
+	margin-bottom: 4px;
+}
+
+.launchdarkly-view .ld-view-status {
+	font-size: 11px;
+	opacity: 0.7;
+	margin-bottom: 8px;
+	word-break: break-word;
+}
+
+.launchdarkly-view .ld-view-subheader {
+	text-transform: uppercase;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	opacity: 0.7;
+	margin-top: 10px;
+	margin-bottom: 2px;
+}
+
+.launchdarkly-view .monaco-button {
+	width: 100%;
+}
+
+.launchdarkly-view .ld-view-subheader .ld-view-count {
+	margin-left: 6px;
+	padding: 0 6px;
+	border-radius: 8px;
+	font-size: 10px;
+	background-color: var(--vscode-badge-background);
+	color: var(--vscode-badge-foreground);
+}
+
+.launchdarkly-view .ld-view-active-firm {
+	padding: 2px 0 4px;
+	word-break: break-word;
+}
+
+.launchdarkly-view .ld-view-firms {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	max-height: 40vh;
+	overflow-y: auto;
+}
+
+.launchdarkly-view .ld-view-firms-message {
+	font-size: 11px;
+	opacity: 0.8;
+	line-height: 1.4;
+	word-break: break-word;
+}
+
+.launchdarkly-view .ld-view-firms-error {
+	color: var(--vscode-errorForeground);
+	opacity: 1;
+}
+
+.launchdarkly-view .ld-view-firm-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 6px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.launchdarkly-view .ld-view-firm-row:hover,
+.launchdarkly-view .ld-view-firm-row:focus {
+	background-color: var(--vscode-list-hoverBackground);
+	outline: none;
+}
+
+.launchdarkly-view .ld-view-firm-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.launchdarkly-view .ld-view-firm-key {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 11px;
+	opacity: 0.6;
+}
+
+.launchdarkly-view .ld-view-firm-active-badge {
+	display: none;
+	margin-left: auto;
+	color: var(--vscode-charts-yellow);
+}
+
+.launchdarkly-view .ld-view-firm-active-badge.active {
+	display: inline-block;
+}
+
+/* --- Firm variants grid --------------------------------------------------- */
+
+.launchdarkly-management-editor .ld-variants-container {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	overflow: hidden;
+	min-height: 0;
+}
+
+.launchdarkly-management-editor .ld-variants-firm-bar {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 6px 8px;
+	font-size: 12px;
+	flex-wrap: wrap;
+}
+
+.launchdarkly-management-editor .ld-firm-label {
+	text-transform: uppercase;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	opacity: 0.7;
+}
+
+.launchdarkly-management-editor .ld-firm-name {
+	font-weight: 600;
+}
+
+.launchdarkly-management-editor .ld-firm-key {
+	font-size: 11px;
+	opacity: 0.7;
+	font-family: var(--monaco-monospace-font);
+}
+
+.launchdarkly-management-editor .ld-firm-env {
+	font-size: 11px;
+	padding: 1px 8px;
+	border-radius: 10px;
+	background: var(--vscode-badge-background);
+	color: var(--vscode-badge-foreground);
+}
+
+.launchdarkly-management-editor .ld-variants-banners {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 0 8px;
+}
+
+.launchdarkly-management-editor .ld-variants-banner {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+}
+
+.launchdarkly-management-editor .ld-variants-banner.warning {
+	background: var(--vscode-inputValidation-warningBackground);
+	border: 1px solid var(--vscode-inputValidation-warningBorder);
+	color: var(--vscode-inputValidation-warningForeground, var(--vscode-foreground));
+}
+
+.launchdarkly-management-editor .ld-variants-banner .banner-text {
+	flex: 1;
+}
+
+.launchdarkly-management-editor .ld-variants-filter-bar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px 8px;
+	position: relative;
+}
+
+.launchdarkly-management-editor .ld-variants-filter-input {
+	flex: 1;
+	min-width: 0;
+}
+
+.launchdarkly-management-editor .ld-variants-filter-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+}
+
+.launchdarkly-management-editor .ld-variants-count {
+	font-size: 11px;
+	padding: 1px 8px;
+	border-radius: 10px;
+	border: 1px solid var(--vscode-contrastBorder, transparent);
+	white-space: nowrap;
+}
+
+.launchdarkly-management-editor .ld-variants-progress {
+	height: 2px;
+	position: relative;
+}
+
+.launchdarkly-management-editor .ld-variants-table {
+	flex: 1;
+	position: relative;
+	overflow: hidden;
+	min-height: 0;
+}
+
+.launchdarkly-management-editor .ld-variants-empty {
+	position: absolute;
+	top: 40%;
+	left: 0;
+	right: 0;
+	text-align: center;
+	opacity: 0.8;
+	font-size: 12px;
+	pointer-events: none;
+}
+
+.launchdarkly-management-editor .monaco-table-th {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	opacity: 0.8;
+}
+
+/* State dot */
+.launchdarkly-management-editor .ld-variant-state {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+}
+
+.launchdarkly-management-editor .ld-variant-dot {
+	font-size: 10px;
+}
+
+/* Flag cell */
+.launchdarkly-management-editor .ld-variant-flag {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	height: 100%;
+	min-width: 0;
+}
+
+/*
+ * Monaco list/table widgets set the row's line-height equal to the row height
+ * to centre single-line content. That value inherits into multi-line cells
+ * (flag name + key stacks, label + description) where each text line then
+ * renders on a row-height line box and bleeds over its neighbours. Every
+ * text element inside a row must therefore reset line-height.
+ */
+.launchdarkly-management-editor .launchdarkly-row .row-label,
+.launchdarkly-management-editor .launchdarkly-row .row-description,
+.launchdarkly-management-editor .launchdarkly-row .row-status,
+.launchdarkly-management-editor .ld-flag-name,
+.launchdarkly-management-editor .ld-flag-key,
+.launchdarkly-management-editor .ld-variant-pill,
+.launchdarkly-management-editor .ld-pill-label,
+.launchdarkly-management-editor .ld-pill-value,
+.launchdarkly-management-editor .ld-reason-text,
+.launchdarkly-management-editor .ld-reason-badge {
+	line-height: normal;
+}
+
+.launchdarkly-management-editor .ld-flag-name {
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.launchdarkly-management-editor .ld-flag-name .highlight {
+	background: var(--vscode-launchDarkly-variantFilterMatchBackground, var(--vscode-list-filterMatchBackground));
+	color: inherit;
+}
+
+.launchdarkly-management-editor .ld-flag-key {
+	font-size: 11px;
+	opacity: 0.7;
+	font-family: var(--monaco-monospace-font);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Variant pill — outlined so it reads on light and dark backgrounds alike. */
+.launchdarkly-management-editor .ld-variant-value {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	min-width: 0;
+}
+
+.launchdarkly-management-editor .ld-variant-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	padding: 1px 8px;
+	border-radius: 10px;
+	border: 1px solid currentColor;
+	background: color-mix(in srgb, currentColor 16%, transparent);
+	outline: 1px solid var(--vscode-contrastBorder, transparent);
+	outline-offset: -1px;
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.launchdarkly-management-editor .ld-variant-pill.ld-degraded {
+	border-style: dashed;
+}
+
+.launchdarkly-management-editor .ld-pill-icon {
+	font-size: 11px;
+}
+
+.launchdarkly-management-editor .ld-pill-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.launchdarkly-management-editor .ld-pill-value {
+	opacity: 0.75;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Variation tones. Keyed on the variation index so a variation keeps one colour. */
+.launchdarkly-management-editor .ld-tone-on { color: var(--vscode-testing-iconPassed, var(--vscode-charts-green)); }
+.launchdarkly-management-editor .ld-tone-off { color: var(--vscode-descriptionForeground); }
+.launchdarkly-management-editor .ld-tone-v1 { color: var(--vscode-charts-blue); }
+.launchdarkly-management-editor .ld-tone-v2 { color: var(--vscode-charts-purple); }
+.launchdarkly-management-editor .ld-tone-v3 { color: var(--vscode-charts-orange); }
+.launchdarkly-management-editor .ld-tone-v4 { color: var(--vscode-charts-yellow); }
+.launchdarkly-management-editor .ld-tone-v5 { color: var(--vscode-charts-green); }
+.launchdarkly-management-editor .ld-tone-unknown { color: var(--vscode-charts-lines); }
+.launchdarkly-management-editor .ld-tone-error { color: var(--vscode-charts-red); }
+
+/* charts.yellow is the weakest pair on light themes. */
+.vs .launchdarkly-management-editor .ld-tone-v4 { color: var(--vscode-charts-orange); }
+
+/* Reason cell */
+.launchdarkly-management-editor .ld-variant-reason {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	height: 100%;
+	min-width: 0;
+}
+
+.launchdarkly-management-editor .ld-reason-icon {
+	opacity: 0.8;
+	flex: 0 0 auto;
+}
+
+.launchdarkly-management-editor .ld-reason-text {
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.launchdarkly-management-editor .ld-reason-badge {
+	flex: none;
+	font-size: 11px;
+	padding: 0 6px;
+	border-radius: 8px;
+	border: 1px solid currentColor;
+	color: var(--vscode-launchDarkly-variantDegradedForeground, var(--vscode-editorWarning-foreground));
+}
+
+/* Row actions stay in the accessibility tree, so hide with opacity not display. */
+.launchdarkly-management-editor .ld-variant-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	height: 100%;
+	opacity: 0;
+}
+
+.launchdarkly-management-editor .monaco-list-row:hover .ld-variant-actions,
+.launchdarkly-management-editor .monaco-list-row.focused .ld-variant-actions,
+.launchdarkly-management-editor .ld-variant-actions:focus-within {
+	opacity: 1;
+}
+
+/* Colour must never be the only signal. */
+@media (forced-colors: active) {
+	.launchdarkly-management-editor .ld-variant-pill,
+	.launchdarkly-management-editor .ld-reason-badge {
+		background: transparent;
+		color: CanvasText;
+		border-color: CanvasText;
+	}
+}

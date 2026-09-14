@@ -1,0 +1,17 @@
+{
+	"registrations": [
+		{
+			"component": {
+				"type": "git",
+				"git": {
+					"name": "dracula/visual-studio-code",
+					"repositoryUrl": "https://github.com/dracula/visual-studio-code",
+					"commitHash": "1851317af14e22f62e77ac73edda973e0d92909d"
+				}
+			},
+			"license": "MIT",
+			"version": "2.25.1"
+		}
+	],
+	"version": 1
+}

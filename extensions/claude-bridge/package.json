@@ -1,0 +1,54 @@
+{
+	"name": "claude-bridge",
+	"displayName": "%displayName%",
+	"description": "%description%",
+	"publisher": "vscode",
+	"version": "0.2.0",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.85.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"capabilities": {
+		"virtualWorkspaces": false,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"main": "./out/extension",
+	"contributes": {
+		"commands": [
+			{
+				"command": "claudeVscodeBridge.status",
+				"title": "%command.status%",
+				"category": "Claude Bridge"
+			},
+			{
+				"command": "claudeVscodeBridge.restart",
+				"title": "%command.restart%",
+				"category": "Claude Bridge"
+			}
+		]
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.0.4",
+		"zod": "^3.23.8",
+		"zod-to-json-schema": "^3.23.2"
+	},
+	"devDependencies": {
+		"@types/node": "22.x"
+	},
+	"scripts": {
+		"compile": "gulp compile-extension:claude-bridge",
+		"watch": "gulp watch-extension:claude-bridge"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	}
+}

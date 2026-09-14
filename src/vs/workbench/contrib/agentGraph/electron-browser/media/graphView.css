@@ -54,7 +54,8 @@ html, body {
 }
 
 #fitButton,
-#relayoutButton {
+#relayoutButton,
+#feedToggle {
 	background: transparent;
 	color: var(--vscode-foreground);
 	border: 1px solid var(--vscode-button-secondaryBackground, var(--vscode-panel-border));
@@ -66,13 +67,191 @@ html, body {
 }
 
 #fitButton:hover,
-#relayoutButton:hover {
+#relayoutButton:hover,
+#feedToggle:hover {
 	background-color: var(--vscode-toolbar-hoverBackground);
 }
 
 #graph {
 	height: calc(100% - 34px);
 	width: 100%;
+}
+
+#breadcrumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	white-space: nowrap;
+}
+
+.crumb {
+	background: transparent;
+	border: none;
+	color: var(--vscode-textLink-foreground, #3794ff);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 0.9em;
+	padding: 2px 4px;
+	border-radius: 3px;
+}
+
+.crumb:disabled {
+	color: var(--vscode-foreground);
+	cursor: default;
+	font-weight: 600;
+}
+
+.crumb:not(:disabled):hover {
+	background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.crumb-sep {
+	opacity: 0.5;
+}
+
+.crumb-current {
+	font-weight: 600;
+	font-size: 0.9em;
+	max-width: 220px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#feed {
+	position: absolute;
+	right: 0;
+	top: 34px;
+	bottom: 0;
+	width: 300px;
+	display: none;
+	flex-direction: column;
+	border-left: 1px solid var(--vscode-panel-border);
+	background-color: var(--vscode-editor-background);
+}
+
+body.feed-open #feed {
+	display: flex;
+}
+
+body.feed-open #graph {
+	width: calc(100% - 300px);
+}
+
+body.feed-open #inspector {
+	right: 310px;
+}
+
+.feed-title {
+	padding: 6px 8px;
+	font-weight: 600;
+	font-size: 0.85em;
+	border-bottom: 1px solid var(--vscode-panel-border);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#feedList {
+	overflow-y: auto;
+	overflow-x: hidden;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	flex: 1;
+}
+
+.feed-entry {
+	display: grid;
+	grid-template-columns: 16px 1fr auto;
+	gap: 6px;
+	padding: 3px 8px;
+	cursor: pointer;
+	font-size: 0.85em;
+	align-items: baseline;
+}
+
+.feed-entry:hover {
+	background-color: var(--vscode-list-hoverBackground);
+}
+
+.feed-entry.fail .feed-icon {
+	color: var(--vscode-charts-red, #f14c4c);
+}
+
+.feed-entry.ok .feed-icon {
+	color: var(--vscode-charts-green, #89d185);
+}
+
+.feed-icon {
+	opacity: 0.85;
+	text-align: center;
+}
+
+.feed-text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.feed-time {
+	opacity: 0.6;
+	font-size: 0.9em;
+}
+
+.feed-count {
+	background-color: var(--vscode-badge-background, #4d4d4d);
+	color: var(--vscode-badge-foreground, #ffffff);
+	border-radius: 8px;
+	padding: 0 5px;
+	font-size: 0.85em;
+	margin-left: 4px;
+}
+
+.feed-empty,
+.feed-loading {
+	opacity: 0.6;
+	padding: 8px;
+	text-align: center;
+	list-style: none;
+	font-size: 0.85em;
+}
+
+.feed-miss {
+	animation: feedMiss 0.6s;
+}
+
+@keyframes feedMiss {
+	0%, 100% { background-color: transparent; }
+	50% { background-color: var(--vscode-inputValidation-warningBackground, rgba(255, 200, 0, 0.2)); }
+}
+
+#emptyState {
+	position: absolute;
+	top: 40%;
+	left: 0;
+	right: 0;
+	text-align: center;
+	opacity: 0.6;
+	pointer-events: none;
+	padding: 0 20px;
+}
+
+body.feed-open #emptyState {
+	right: 300px;
+}
+
+@media (max-width: 520px) {
+	body.feed-open #feed {
+		width: 200px;
+	}
+
+	body.feed-open #graph {
+		width: calc(100% - 200px);
+	}
+
+	body.feed-open #inspector {
+		right: 210px;
+	}
 }
 
 #legend {
@@ -181,6 +360,34 @@ html, body {
 
 .inspector-value {
 	word-break: break-all;
+}
+
+.inspector-prompt {
+	max-height: 120px;
+	overflow-y: auto;
+	white-space: pre-wrap;
+	word-break: break-word;
+	margin-top: 8px;
+	padding: 6px;
+	border-radius: 3px;
+	background-color: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+	font-size: 0.9em;
+}
+
+.inspector-list {
+	max-height: 160px;
+	overflow-y: auto;
+	margin-top: 8px;
+	font-family: var(--vscode-editor-font-family, monospace);
+	font-size: 0.85em;
+}
+
+.inspector-list-item {
+	padding: 1px 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	opacity: 0.85;
 }
 
 .inspector-actions {

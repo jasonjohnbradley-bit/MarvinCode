@@ -1,6 +1,10 @@
-# VS Code Copilot Instructions
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. It also serves as the Copilot instructions — `.claude/CLAUDE.md` is a symlink to `.github/copilot-instructions.md`, so edits here reach both agents.
 
 ## Project Overview
+
+This repository is **MarvinCode**, a fork of Visual Studio Code (Code - OSS). Upstream VS Code architecture and guidelines apply everywhere; fork-specific rules are in the "MarvinCode Fork" sections below and in `PATCHES.md`.
 
 Visual Studio Code is built with a layered architecture using TypeScript, web APIs and Electron, combining web technologies with native app capabilities. The codebase is organized into key architectural layers:
 
@@ -47,6 +51,59 @@ Each extension follows the standard VS Code extension structure with `package.js
 2. **Grep for exact strings**: Use grep for error messages or specific function names
 3. **Follow imports**: Check what files import the problematic module
 4. **Check test files**: Often reveal usage patterns and expected behavior
+
+## Build & Run
+
+```bash
+npm install                      # Install dependencies (requires the Node version in .nvmrc)
+npm run watch                    # Incremental build: Core (src/) + Ext (extensions/) watch tasks
+./scripts/code.sh                # Launch MarvinCode from sources (macOS/Linux; scripts\code.bat on Windows)
+npm run typecheck-client         # Type-check src/ only (no emit)
+npm run gulp compile-extensions  # Compile built-in extensions (reports extension TS errors)
+npm run valid-layers-check       # Check architectural layering rules
+./scripts/test.sh --grep <pat>   # Unit tests, filtered to a pattern (single test/suite)
+./scripts/test-integration.sh    # Integration tests (*.integrationTest.ts and extension tests)
+```
+
+The `/launch` skill (when available) launches the workbench into an isolated throwaway profile with debug ports for UI automation and debugger attachment — prefer it over `./scripts/code.sh` when you need to drive or inspect the running app.
+
+## MarvinCode Fork: Structure & Discipline
+
+MarvinCode tracks upstream `microsoft/vscode` via monthly `release/1.xx` merges. To keep merges cheap, **all new functionality lives in fork-owned directories** that never conflict, and every unavoidable edit to an upstream file is:
+
+1. Wrapped in `// FORK:agentGraph begin/end` markers (JSON files excepted), and
+2. Recorded in `PATCHES.md` (the authoritative ledger, with re-apply notes per file).
+
+Hard rules: **max 9 modified upstream files**; never modify extHost/mainThread RPC protocol files or `vscode.proposed.*.d.ts`. If a change would touch a new upstream file, update `PATCHES.md` in the same commit. See `PATCHES.md` for the current table and the merge procedure.
+
+### Fork-owned components
+
+**Agent Graph** — visualizes agent/tool activity as a live graph:
+- `src/vs/platform/agentGraph/` — `common/` service interface, `node/` event normalizer + graph store + kanban card linker, `electron-main/` main-process service (registered in `app.ts` with an IPC channel, one of the patched upstream files).
+- `src/vs/workbench/contrib/agentGraph/electron-browser/` — editor + view pane hosting a Cytoscape webview (`media/graphView.js`); `chatAgentGraphListener.ts` feeds built-in chat tool calls into the graph via the fork-added `onDidFinishTool` event on `languageModelToolsService`.
+- Packaged-build gotcha: webview media must be listed in `vscodeResourceIncludes` in `build/gulpfile.vscode.ts`, or packaged apps ship without the assets and the canvas renders empty.
+
+**Workbench contribs**: `src/vs/workbench/contrib/marvinBridge/` (bridge contribution) and `src/vs/workbench/contrib/launchDarkly/` (feature flags). Fork contribs are imported from `workbench.desktop.main.ts` inside a `// FORK:agentGraph` block.
+
+**Built-in extensions** (each registered in the `compilations` array in `build/gulpfile.extensions.ts`):
+- `extensions/kanban/` — file-based Kanban boards in the workspace, plus Jira sync, campaign orchestration, reMarkable meeting-notes ingestion, and the Agents-window launcher.
+- `extensions/agent-runner/` — hosts custom agents whose actions stream into the Agent Graph.
+- `extensions/claude-bridge/` — the `vscode-bridge` MCP server (next section).
+- `extensions/langfuse/` — Langfuse LLM trace/span/score browser sidebar.
+- `extensions/theme-token-effort/` — the MarvinCode theme.
+
+## MarvinCode: Shared Browser & Editor Bridge (`vscode-bridge` MCP)
+
+MarvinCode (this fork) ships a built-in `claude-bridge` extension that exposes the user's live editor, debug, and **Integrated Browser** state to any external agent over the **`vscode-bridge`** MCP server (stdio). It is CLI-agnostic — Devin, Claude Code, GitHub Copilot CLI, or any MCP-capable client can use it once the server is registered (`node extensions/claude-bridge/out/mcp/server.js`).
+
+**Important tool-selection rule:** when the user talks about a browser window that is "shared with you", "in MarvinCode", or the "Integrated Browser", use the `vscode-bridge` tools below — do NOT use a `playwright` / `browser_*` MCP server. A `playwright` server drives a *separate* browser you control and cannot see the user's screen; `vscode-bridge` is the user's actual on-screen MarvinCode browser.
+
+Tools exposed by `vscode-bridge`:
+- Integrated Browser (real Chromium, user-visible, shareable): `listBrowserPages`, `openBrowserPage`, `shareBrowserPage`, `readBrowserPage`, `screenshotBrowserPage`, `navigateBrowserPage`, `clickBrowserElement`, `typeInBrowserPage`
+- Legacy Simple Browser: `openSimpleBrowser`, `listSimpleBrowserTabs`, `closeSimpleBrowser`
+- Editor & debug (read-only): `getEditorState`, `listDirtyBuffers`, `getDirtyBuffer`, `getDebugState`
+
+To see what the user is sharing: call `listBrowserPages`, then `readBrowserPage` (accessibility snapshot) or `screenshotBrowserPage` on a page with `shared: true`. If a page is `shared: false`, call `shareBrowserPage` first (this prompts the user to consent). Only shared pages can be read or controlled. Requires MarvinCode running with the workspace open; launch the CLI from the workspace folder so the bridge targets the correct window.
 
 ## Validating TypeScript changes
 

@@ -118,6 +118,12 @@
 				"title": "%command.remarkableGenerateTickets%",
 				"category": "Kanban",
 				"icon": "$(rocket)"
+			},
+			{
+				"command": "kanban.remarkable.askAgent",
+				"title": "%command.remarkableAskAgent%",
+				"category": "Kanban",
+				"icon": "$(sparkle)"
 			}
 		],
 		"viewsContainers": {
@@ -131,6 +137,16 @@
 					"id": "remarkable",
 					"title": "%viewContainer.remarkable%",
 					"icon": "media/remarkable-icon.svg"
+				},
+				{
+					"id": "agentsWindow",
+					"title": "%viewContainer.agentsWindow%",
+					"icon": "media/agents-window-icon.svg"
+				},
+				{
+					"id": "integratedBrowser",
+					"title": "%viewContainer.integratedBrowser%",
+					"icon": "media/browser-icon.svg"
 				}
 			]
 		},
@@ -150,6 +166,18 @@
 					"id": "kanban.remarkableNotebooks",
 					"name": "%view.remarkableNotebooks%"
 				}
+			],
+			"agentsWindow": [
+				{
+					"id": "kanban.agentsWindowLauncher",
+					"name": "%view.agentsWindowLauncher%"
+				}
+			],
+			"integratedBrowser": [
+				{
+					"id": "kanban.browserLauncher",
+					"name": "%view.browserLauncher%"
+				}
 			]
 		},
 		"viewsWelcome": [
@@ -164,6 +192,14 @@
 			{
 				"view": "kanban.remarkableNotebooks",
 				"contents": "%welcome.remarkable%"
+			},
+			{
+				"view": "kanban.agentsWindowLauncher",
+				"contents": "%welcome.agentsWindow%"
+			},
+			{
+				"view": "kanban.browserLauncher",
+				"contents": "%welcome.integratedBrowser%"
 			}
 		],
 		"menus": {
@@ -201,6 +237,11 @@
 					"group": "inline@2"
 				},
 				{
+					"command": "kanban.remarkable.askAgent",
+					"when": "view == kanban.remarkableNotebooks && viewItem == remarkableDoc",
+					"group": "inline@3"
+				},
+				{
 					"command": "kanban.remarkable.generateTickets",
 					"when": "view == kanban.remarkableNotebooks && viewItem == remarkableDoc",
 					"group": "1_actions@1"
@@ -209,6 +250,11 @@
 					"command": "kanban.remarkable.open",
 					"when": "view == kanban.remarkableNotebooks && viewItem == remarkableDoc",
 					"group": "1_actions@2"
+				},
+				{
+					"command": "kanban.remarkable.askAgent",
+					"when": "view == kanban.remarkableNotebooks && viewItem == remarkableDoc",
+					"group": "1_actions@3"
 				}
 			],
 			"editor/title": [

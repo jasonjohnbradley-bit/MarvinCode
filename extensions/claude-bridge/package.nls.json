@@ -1,0 +1,6 @@
+{
+	"displayName": "Claude Bridge",
+	"description": "Exposes editor, debug, and Integrated Browser state to Claude Code terminal sessions over a local MCP bridge.",
+	"command.status": "Show Status",
+	"command.restart": "Restart"
+}

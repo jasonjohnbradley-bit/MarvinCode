@@ -172,6 +172,7 @@ import './contrib/splash/electron-browser/splash.contribution.js';
 
 // FORK:agentGraph begin
 import './contrib/agentGraph/electron-browser/agentGraph.contribution.js';
+import './contrib/marvinBridge/electron-browser/marvinBridge.contribution.js';
 // FORK:agentGraph end
 
 // Local History

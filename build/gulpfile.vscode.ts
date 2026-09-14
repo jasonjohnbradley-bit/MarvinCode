@@ -111,6 +111,10 @@ const vscodeResourceIncludes = [
 	// Webview
 	'out-build/vs/workbench/contrib/webview/browser/pre/*.{js,html}',
 
+	// FORK:agentGraph begin
+	'out-build/vs/workbench/contrib/agentGraph/electron-browser/media/**',
+	// FORK:agentGraph end
+
 	// Extension Host Worker
 	'out-build/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html',
 

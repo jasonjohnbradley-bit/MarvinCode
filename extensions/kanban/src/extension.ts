@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
+import { LauncherViews } from './agentsWindowLauncher';
 import { BoardEditorProvider } from './boardEditorProvider';
 import { scaffoldBoard } from './boardModel';
 import { BoardsViewProvider } from './boardsViewProvider';
@@ -32,5 +33,6 @@ export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(vscode.commands.registerCommand('kanban.remarkable.connect', () => pairRemarkable(context.secrets)));
 	context.subscriptions.push(vscode.commands.registerCommand('kanban.remarkable.import', () => importMeetingNotes(context.secrets, runner)));
 	context.subscriptions.push(NotebooksViewProvider.register(context, runner));
+	context.subscriptions.push(LauncherViews.register());
 	context.subscriptions.push(registerKanbanTools(context.secrets));
 }

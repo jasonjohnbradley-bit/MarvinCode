@@ -296,6 +296,10 @@ const desktopResourcePatterns = [
 	// Sessions - built-in prompts and skills
 	'vs/sessions/prompts/*.prompt.md',
 	'vs/sessions/skills/**/SKILL.md',
+
+	// FORK:agentGraph begin
+	'vs/workbench/contrib/agentGraph/electron-browser/media/**/*.*',
+	// FORK:agentGraph end
 ];
 
 // Resources for server target (minimal - no UI)

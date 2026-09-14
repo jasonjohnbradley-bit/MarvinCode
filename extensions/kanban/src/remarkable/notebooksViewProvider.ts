@@ -54,6 +54,11 @@ export class NotebooksViewProvider implements vscode.TreeDataProvider<Remarkable
 				await provider.openDocument(node.doc);
 			}
 		}));
+		disposables.push(vscode.commands.registerCommand('kanban.remarkable.askAgent', async (node?: RemarkableNode) => {
+			if (node?.kind === 'doc') {
+				await provider.askAgent(node.doc);
+			}
+		}));
 
 		// Refresh the listing when the view first becomes visible after pairing
 		disposables.push(treeView.onDidChangeVisibility(e => {
@@ -96,6 +101,58 @@ export class NotebooksViewProvider implements vscode.TreeDataProvider<Remarkable
 				});
 		} catch (error) {
 			void vscode.window.showErrorMessage(vscode.l10n.t('Could not open "{0}": {1}', doc.name, error instanceof Error ? error.message : String(error)));
+		}
+	}
+
+	/**
+	 * Renders the document's pages and hands them to the in-editor chat agent
+	 * as image attachments, so it can read the handwriting and diagrams with
+	 * vision and answer follow-up questions in the same conversation.
+	 */
+	private async askAgent(doc: RemarkableDoc): Promise<void> {
+		const api = await ensureRemarkable(this.secrets);
+		if (!api) {
+			return;
+		}
+		try {
+			const sources = await vscode.window.withProgress(
+				{ location: vscode.ProgressLocation.Notification, title: vscode.l10n.t('Rendering "{0}" for the agent…', doc.name) },
+				async () => {
+					try {
+						return [await downloadPdf(api, doc)];
+					} catch {
+						// Pure notebook — render the handwriting to page images
+						return renderNotebookPages(api, doc, os.tmpdir());
+					}
+				});
+
+			let attach = sources;
+			if (sources.length > 1) {
+				type PagePick = vscode.QuickPickItem & { path: string };
+				const picks = await vscode.window.showQuickPick<PagePick>(
+					sources.map((path, index) => ({ label: vscode.l10n.t('Page {0}', index + 1), path, picked: true })),
+					{ placeHolder: vscode.l10n.t('Which pages should the agent read?'), canPickMany: true });
+				if (!picks) {
+					return;
+				}
+				attach = picks.length ? picks.map(pick => pick.path) : sources;
+			}
+
+			const question = await vscode.window.showInputBox({
+				prompt: vscode.l10n.t('What should the agent do with "{0}"?', doc.name),
+				value: vscode.l10n.t('Transcribe these handwritten notes faithfully (describe any sketches or diagrams), then summarize the key points and action items.'),
+				ignoreFocusOut: true
+			});
+			if (question === undefined) {
+				return;
+			}
+
+			await vscode.commands.executeCommand('workbench.action.chat.open', {
+				query: question || vscode.l10n.t('Read and describe these notes.'),
+				attachFiles: attach.map(file => vscode.Uri.file(file))
+			});
+		} catch (error) {
+			void vscode.window.showErrorMessage(vscode.l10n.t('Could not prepare "{0}" for the agent: {1}', doc.name, error instanceof Error ? error.message : String(error)));
 		}
 	}
 

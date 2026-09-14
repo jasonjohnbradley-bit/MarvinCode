@@ -181,7 +181,12 @@ function fromLocalEsbuild(extensionPath: string, esbuildConfigFileName: string):
 		});
 	}).then(() => {
 		// After esbuild completes, collect all files using vsce
-		return vsce.listFiles({ cwd: extensionPath, packageManager: vsce.PackageManager.None });
+		// FORK:agentGraph begin — copilot's .vscodeignore re-includes curated node_modules/@github/copilot
+		// files (the Copilot CLI SDK), but PackageManager.None skips dependency collection entirely, so
+		// local packaged builds shipped no SDK and prepareBuiltInCopilotRipgrepShim hard-failed.
+		const packageManager = extensionName === 'copilot' ? vsce.PackageManager.Npm : vsce.PackageManager.None;
+		return vsce.listFiles({ cwd: extensionPath, packageManager });
+		// FORK:agentGraph end
 	}).then(fileNames => {
 		if (packagedDependencies.length > 0) {
 			const packagedDependencyFileNames = packagedDependencies.flatMap(dependency =>

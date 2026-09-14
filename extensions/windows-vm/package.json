@@ -1,0 +1,201 @@
+{
+	"name": "windows-vm",
+	"displayName": "%displayName%",
+	"description": "%description%",
+	"version": "1.0.0",
+	"publisher": "vscode",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.70.0"
+	},
+	"main": "./out/extension",
+	"categories": [
+		"Other"
+	],
+	"extensionKind": [
+		"workspace"
+	],
+	"activationEvents": [],
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "windowsVm",
+					"title": "%viewContainer.windowsVm%",
+					"icon": "media/windows-vm-icon.svg"
+				}
+			]
+		},
+		"views": {
+			"windowsVm": [
+				{
+					"id": "windowsVm.panel",
+					"name": "%view.desktop%"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+				"view": "windowsVm.panel",
+				"contents": "%welcome.contents%"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "windowsVm.openDesktop",
+					"when": "view == windowsVm.panel",
+					"group": "navigation@1"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "windowsVm.openDesktop",
+				"title": "%command.openDesktop%",
+				"category": "Windows VM",
+				"icon": "$(vm)"
+			},
+			{
+				"command": "windowsVm.setPassword",
+				"title": "%command.setPassword%",
+				"category": "Windows VM",
+				"icon": "$(key)"
+			},
+			{
+				"command": "windowsVm.startGateway",
+				"title": "%command.startGateway%",
+				"category": "Windows VM"
+			},
+			{
+				"command": "windowsVm.stopGateway",
+				"title": "%command.stopGateway%",
+				"category": "Windows VM"
+			},
+			{
+				"command": "windowsVm.restartGateway",
+				"title": "%command.restartGateway%",
+				"category": "Windows VM"
+			},
+			{
+				"command": "windowsVm.showLogs",
+				"title": "%command.showLogs%",
+				"category": "Windows VM"
+			}
+		],
+		"configuration": [
+			{
+				"title": "%configuration.title%",
+				"properties": {
+					"windowsVm.host": {
+						"type": "string",
+						"default": "",
+						"description": "%configuration.host%"
+					},
+					"windowsVm.rdpPort": {
+						"type": "number",
+						"default": 3389,
+						"description": "%configuration.rdpPort%"
+					},
+					"windowsVm.username": {
+						"type": "string",
+						"default": "",
+						"description": "%configuration.username%"
+					},
+					"windowsVm.domain": {
+						"type": "string",
+						"default": "",
+						"description": "%configuration.domain%"
+					},
+					"windowsVm.security": {
+						"type": "string",
+						"enum": [
+							"nla",
+							"tls",
+							"rdp",
+							"any"
+						],
+						"default": "nla",
+						"description": "%configuration.security%"
+					},
+					"windowsVm.ignoreCert": {
+						"type": "boolean",
+						"default": true,
+						"description": "%configuration.ignoreCert%"
+					},
+					"windowsVm.display.resizeMethod": {
+						"type": "string",
+						"enum": [
+							"display-update",
+							"reconnect"
+						],
+						"default": "display-update",
+						"description": "%configuration.resizeMethod%"
+					},
+					"windowsVm.display.colorDepth": {
+						"type": "number",
+						"enum": [
+							8,
+							16,
+							24,
+							32
+						],
+						"default": 24,
+						"description": "%configuration.colorDepth%"
+					},
+					"windowsVm.gateway.port": {
+						"type": "number",
+						"default": 58080,
+						"description": "%configuration.gatewayPort%"
+					},
+					"windowsVm.gateway.sessionHours": {
+						"type": "number",
+						"default": 24,
+						"minimum": 1,
+						"maximum": 168,
+						"description": "%configuration.sessionHours%"
+					},
+					"windowsVm.gateway.imageTag": {
+						"type": "string",
+						"default": "1.6.0",
+						"description": "%configuration.imageTag%"
+					},
+					"windowsVm.openToSide": {
+						"type": "boolean",
+						"default": false,
+						"description": "%configuration.openToSide%"
+					},
+					"windowsVm.ssh.enabled": {
+						"type": "boolean",
+						"default": false,
+						"description": "%configuration.sshEnabled%"
+					},
+					"windowsVm.ssh.user": {
+						"type": "string",
+						"default": "",
+						"description": "%configuration.sshUser%"
+					},
+					"windowsVm.ssh.port": {
+						"type": "number",
+						"default": 22,
+						"description": "%configuration.sshPort%"
+					}
+				}
+			}
+		]
+	},
+	"scripts": {
+		"compile": "gulp compile-extension:windows-vm",
+		"watch": "gulp watch-extension:windows-vm"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
+	}
+}

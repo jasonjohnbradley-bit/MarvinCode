@@ -1,0 +1,21 @@
+{
+	"displayName": "Langfuse",
+	"description": "Browse Langfuse LLM traces, spans and scores from a sidebar.",
+	"viewContainer.langfuse": "Langfuse",
+	"view.traces": "Traces",
+	"welcome.disconnected": "Connect to Langfuse to browse your agent traces.\n[Set API Keys](command:langfuse.setKeys)\nKeys come from Langfuse → Settings → API Keys. The secret key is stored in the OS keychain.",
+	"welcome.connected": "No traces match the current view.\n[Refresh](command:langfuse.refresh)\n[Filter Traces](command:langfuse.setFilter)",
+	"command.setKeys": "Set API Keys",
+	"command.refresh": "Refresh Traces",
+	"command.setFilter": "Filter Traces…",
+	"command.clearFilter": "Clear Filter",
+	"command.toggleAutoRefresh": "Toggle Auto-Refresh",
+	"command.openTrace": "Open Trace",
+	"command.openInLangfuse": "Open in Langfuse",
+	"command.copyTraceId": "Copy Trace ID",
+	"command.disconnect": "Sign Out",
+	"configuration.host": "Base URL of your Langfuse instance (Cloud US: https://us.cloud.langfuse.com, Cloud EU: https://cloud.langfuse.com, or your self-hosted URL).",
+	"configuration.publicKey": "Langfuse public key (pk-lf-…). The matching secret key is stored securely in the OS keychain via the 'Set API Keys' command.",
+	"configuration.traceLimit": "How many recent traces to load in the sidebar.",
+	"configuration.autoRefreshSeconds": "Automatically refresh the traces list every N seconds. 0 disables auto-refresh."
+}

@@ -22,17 +22,63 @@ function resolvePython(): string {
 		'Handwriting rendering needs the rmscene Python package. One-time setup:\n  python3 -m venv ~/.marvincode/tools/rm-venv && ~/.marvincode/tools/rm-venv/bin/pip install rmscene'));
 }
 
-function resolveMagick(): string {
-	for (const candidate of ['/opt/homebrew/bin/magick', '/usr/local/bin/magick']) {
+/** Locate a binary in the common Homebrew prefixes, then on PATH. */
+function locate(name: string, prefixes: string[]): string | undefined {
+	for (const candidate of prefixes) {
 		if (fs.existsSync(candidate)) {
 			return candidate;
 		}
 	}
 	try {
-		return execFileSync('which', ['magick'], { encoding: 'utf8' }).trim();
+		const hit = execFileSync('which', [name], { encoding: 'utf8' }).trim();
+		return hit || undefined;
 	} catch {
-		throw new Error(vscode.l10n.t('Handwriting rendering needs ImageMagick (`brew install imagemagick`).'));
+		return undefined;
 	}
+}
+
+// Rasterize the SVG at 3x its intrinsic px size — crisp enough that a vision
+// model can read small handwriting without the file becoming needlessly huge.
+const RASTER_SCALE = 3;
+// A gentle contrast stretch applied to the raster: deepens faint pencil strokes
+// toward black and cleans the near-white background, WITHOUT hard thresholding
+// (which would re-introduce the aliasing we removed). Preserves colour and the
+// anti-aliased stroke edges. `-level black,white`: input <=20% -> black,
+// >=93% -> white, the rest stretched linearly.
+const CONTRAST_LEVELS = '20%,93%';
+
+/**
+ * A function that rasterizes an SVG file to a PNG file. We prefer librsvg
+ * (`rsvg-convert`): it anti-aliases strokes properly, giving crisp handwriting.
+ * ImageMagick is only a fallback for the SVG step — its built-in MSVG renderer
+ * produces aliased, near 1-bit output that makes handwriting blocky to read/OCR
+ * — but it is still used (when present) for the raster contrast pass, which is a
+ * plain PNG->PNG operation it handles well.
+ */
+function resolveRasterizer(): (svgPath: string, pngPath: string) => void {
+	const magick = locate('magick', ['/opt/homebrew/bin/magick', '/usr/local/bin/magick']);
+	const applyContrast = (pngPath: string): void => {
+		if (magick) {
+			execFileSync(magick, [pngPath, '-level', CONTRAST_LEVELS, pngPath], { timeout: 30_000 });
+		}
+	};
+
+	const rsvg = locate('rsvg-convert', ['/opt/homebrew/bin/rsvg-convert', '/usr/local/bin/rsvg-convert']);
+	if (rsvg) {
+		return (svgPath, pngPath) => {
+			execFileSync(rsvg, ['-z', String(RASTER_SCALE), '-b', 'white', '-o', pngPath, svgPath], { timeout: 30_000 });
+			applyContrast(pngPath);
+		};
+	}
+	if (magick) {
+		// Fallback: ImageMagick does both the (lower-quality) SVG render and the
+		// contrast stretch in one pass.
+		return (svgPath, pngPath) => {
+			execFileSync(magick, ['-density', String(96 * RASTER_SCALE), '-background', 'white', svgPath, '-flatten', '-level', CONTRAST_LEVELS, pngPath], { timeout: 30_000 });
+		};
+	}
+	throw new Error(vscode.l10n.t(
+		'Handwriting rendering needs an SVG rasterizer. Install librsvg (recommended, crisp output): `brew install librsvg` — or ImageMagick: `brew install imagemagick`.'));
 }
 
 /** Ordered page ids from the document's .content JSON (v6 cPages or legacy pages). */
@@ -47,11 +93,12 @@ function orderedPageIds(contentJson: Record<string, any>): string[] {
 /**
  * Renders a handwritten notebook to PNG page images: sync-zip download →
  * .rm stroke files → SVG (rmscene, ported from agentic-kanban) → PNG
- * (ImageMagick). Returns the ordered PNG paths (capped at 10 pages).
+ * (librsvg, falling back to ImageMagick). Returns the ordered PNG paths
+ * (capped at 10 pages).
  */
 export async function renderNotebookPages(api: RemarkableApi, doc: RemarkableDoc, scratchRoot: string): Promise<string[]> {
 	const python = resolvePython();
-	const magick = resolveMagick();
+	const rasterize = resolveRasterizer();
 
 	const zipBytes = await api.getDocument(doc.id, doc.hash);
 	const workDir = fs.mkdtempSync(path.join(scratchRoot, 'rm-'));
@@ -112,7 +159,7 @@ export async function renderNotebookPages(api: RemarkableApi, doc: RemarkableDoc
 		try {
 			const svg = execFileSync(python, [path.join(__dirname, '..', '..', 'scripts', 'rm_to_svg.py'), pages[index]], { maxBuffer: 16 * 1024 * 1024, timeout: 30_000 });
 			fs.writeFileSync(svgPath, svg);
-			execFileSync(magick, ['-background', 'white', svgPath, '-flatten', '-resize', '1404x1872', pngPath], { timeout: 30_000 });
+			rasterize(svgPath, pngPath);
 			pngPaths.push(pngPath);
 		} catch {
 			// A page that fails to render is skipped, matching agentic-kanban

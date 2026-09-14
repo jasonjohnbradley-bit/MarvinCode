@@ -64,7 +64,7 @@ export class AgentGraphEditorManager extends Disposable {
 		}));
 
 		disposables.add(this.current.webview.onMessage(async e => {
-			const message = e.message as { type: string; path?: string };
+			const message = e.message as { type: string; path?: string; sessionId?: string };
 			if (message.type === 'openFile' && typeof message.path === 'string') {
 				try {
 					await this.editorService.openEditor({ resource: URI.file(message.path) });
@@ -73,6 +73,9 @@ export class AgentGraphEditorManager extends Disposable {
 				}
 			} else if (message.type === 'ready' || message.type === 'refresh') {
 				await this.pushData();
+			} else if (message.type === 'getEvents' && typeof message.sessionId === 'string') {
+				const events = await this.agentGraphService.getRecentEvents(500, { sessionId: message.sessionId });
+				this.current?.webview.postMessage({ type: 'events', sessionId: message.sessionId, events });
 			}
 		}));
 
@@ -88,11 +91,12 @@ export class AgentGraphEditorManager extends Disposable {
 		if (!this.current) {
 			return;
 		}
-		const [snapshot, sessions] = await Promise.all([
+		const [snapshot, sessions, events] = await Promise.all([
 			this.agentGraphService.getGraph(),
-			this.agentGraphService.getSessions()
+			this.agentGraphService.getSessions(),
+			this.agentGraphService.getRecentEvents(300)
 		]);
-		this.current.webview.postMessage({ type: 'graph', snapshot, sessions });
+		this.current.webview.postMessage({ type: 'graph', snapshot, sessions, events });
 	}
 
 }
