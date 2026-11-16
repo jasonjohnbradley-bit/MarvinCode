@@ -10,7 +10,8 @@ MarvinCode exposes the user's live editor, debug, and Integrated Browser state t
 
 When the user refers to a browser window "shared with you", "in MarvinCode", or the "Integrated Browser", use the **`vscode-bridge`** tools — NOT a `playwright` / `browser_*` MCP server (that is a separate browser you drive yourself and cannot see the user's screen):
 
-- `listBrowserPages` — list open Integrated Browser pages (id, url, title, shared).
+- `listBrowserPages` — list open browser pages (id, url, title, shared, browser). `browser: 'chrome'` pages (ids `chrome:N`) are Chrome Tabs: real headless Google Chrome signed in as the user through the Mac's Caseware device sign-in (built-in `chrome-tab` extension). The other tools accept either kind of id.
+- `openBrowserPage` — `browser: 'chrome'` opens a Chrome Tab. Use it for Microsoft 365, SharePoint and other Entra-protected sites, which fail in the Integrated Browser with a device-compliance error. The default, `'integrated'`, opens a fresh signed-out Integrated Browser page.
 - `readBrowserPage` / `screenshotBrowserPage` — view a page where `shared: true`.
 - `shareBrowserPage` — request access to a page where `shared: false` (prompts the user).
 - `navigateBrowserPage` / `clickBrowserElement` / `typeInBrowserPage` — act on a shared page.

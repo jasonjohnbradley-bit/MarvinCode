@@ -16,6 +16,7 @@ build/builtin/browser-main.js
 build/builtin/main.js
 build/codex/generate-protocol.mjs
 eslint.config.js
+extensions/chrome-tab/media/viewer.js
 extensions/copilot/.mocha-multi-reporters.js
 extensions/copilot/.mocharc.js
 extensions/copilot/.vscode-test.mjs

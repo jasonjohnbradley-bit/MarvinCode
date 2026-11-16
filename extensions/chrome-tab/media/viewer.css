@@ -1,0 +1,130 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	overflow: hidden;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-foreground);
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+#toolbar {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 6px;
+	border-bottom: 1px solid var(--vscode-editorGroupHeader-tabsBorder, var(--vscode-panel-border));
+	background: var(--vscode-editorGroupHeader-tabsBackground);
+	flex: none;
+}
+
+#toolbar button {
+	min-width: 26px;
+	height: 24px;
+	border: none;
+	border-radius: 4px;
+	background: transparent;
+	color: var(--vscode-icon-foreground, var(--vscode-foreground));
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+#toolbar button:hover:not(:disabled) {
+	background: var(--vscode-toolbar-hoverBackground);
+}
+
+#toolbar button:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+#nav {
+	flex: 1;
+	margin: 0;
+}
+
+#url {
+	box-sizing: border-box;
+	width: 100%;
+	height: 24px;
+	padding: 0 8px;
+	border: 1px solid var(--vscode-input-border, transparent);
+	border-radius: 4px;
+	background: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	font: inherit;
+}
+
+#url:focus {
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: -1px;
+}
+
+#shared {
+	padding: 2px 4px 2px 8px;
+	border-radius: 4px;
+	background: var(--vscode-badge-background);
+	color: var(--vscode-badge-foreground);
+	font-size: 11px;
+	white-space: nowrap;
+}
+
+#shared #unshare {
+	height: 18px;
+	min-width: 0;
+	padding: 0 6px;
+	font-size: 11px;
+	color: inherit;
+}
+
+#stage {
+	position: relative;
+	flex: 1;
+	overflow: hidden;
+	background: #fff;
+}
+
+#screen {
+	display: block;
+	outline: none;
+}
+
+#sink {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	border: 0;
+	opacity: 0;
+	resize: none;
+	pointer-events: none;
+}
+
+#status {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-descriptionForeground);
+}
+
+#status[hidden] {
+	display: none;
+}

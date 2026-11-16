@@ -1,0 +1,13 @@
+{
+	"displayName": "Chrome Tab",
+	"description": "Shows real Google Chrome (headless, managed, device-SSO capable) inside an editor tab and exposes it to agents.",
+	"command.openUrl": "Open URL in Chrome Tab",
+	"command.openActiveBrowserPage": "Move Integrated Browser Page to Chrome Tab",
+	"command.restart": "Restart Chrome",
+	"command.showLogs": "Show Logs",
+	"config.title": "Chrome Tab",
+	"config.hosts": "Hosts whose links open in a Chrome Tab instead of the external browser, e.g. `*.sharepoint.com`, `*.office.com`, `myapps.microsoft.com`. Use this for sites behind Microsoft device-based Conditional Access, which the Integrated Browser cannot pass.",
+	"config.executablePath": "Path to the Chrome binary. Leave empty to use the installed Google Chrome.",
+	"config.deviceScaleFactor": "Pixel density Chrome renders at. `0` uses the display density of the first Chrome Tab (2 on Retina). Takes effect after **Chrome Tab: Restart Chrome**.",
+	"config.frameQuality": "JPEG quality of the streamed frames (30–100). Lower values use less CPU on large or fast-changing pages."
+}

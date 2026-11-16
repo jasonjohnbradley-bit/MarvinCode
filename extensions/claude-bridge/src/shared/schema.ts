@@ -126,7 +126,10 @@ export const CloseSimpleBrowserOutput = z.object({
 	closed: z.number().int().nonnegative(),
 });
 
-// --- Integrated Browser (real Chromium, shared with agents) ---
+// --- Integrated Browser (Electron's Chromium) and Chrome Tab (real Google Chrome), shared with agents ---
+
+/** 'chrome' pages come from the chrome-tab extension; their ids start with `chrome:`. */
+export const BrowserKind = z.enum(['integrated', 'chrome']);
 
 export const ListBrowserPagesOutput = z.object({
 	pages: z.array(
@@ -135,6 +138,7 @@ export const ListBrowserPagesOutput = z.object({
 			url: z.string(),
 			title: z.string(),
 			shared: z.boolean(),
+			browser: BrowserKind.optional(),
 		})
 	),
 });
@@ -142,6 +146,7 @@ export const ListBrowserPagesOutput = z.object({
 export const OpenBrowserPageInput = z.object({
 	url: z.string().url(),
 	forceNew: z.boolean().default(false),
+	browser: BrowserKind.default('integrated'),
 });
 
 export const OpenBrowserPageOutput = z.object({

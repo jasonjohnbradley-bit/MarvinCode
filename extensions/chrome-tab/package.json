@@ -1,0 +1,87 @@
+{
+	"name": "chrome-tab",
+	"displayName": "%displayName%",
+	"description": "%description%",
+	"version": "1.0.0",
+	"publisher": "vscode",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.70.0"
+	},
+	"enabledApiProposals": [
+		"externalUriOpener"
+	],
+	"main": "./out/extension",
+	"categories": [
+		"Other"
+	],
+	"extensionKind": [
+		"ui"
+	],
+	"activationEvents": [
+		"onStartupFinished",
+		"onWebviewPanel:marvincode.chromeTab"
+	],
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"contributes": {
+		"commands": [
+			{
+				"command": "marvincode.chrome.openUrl",
+				"title": "%command.openUrl%",
+				"category": "Chrome Tab"
+			},
+			{
+				"command": "marvincode.chrome.openActiveBrowserPage",
+				"title": "%command.openActiveBrowserPage%",
+				"category": "Chrome Tab"
+			},
+			{
+				"command": "marvincode.chrome.restart",
+				"title": "%command.restart%",
+				"category": "Chrome Tab"
+			},
+			{
+				"command": "marvincode.chrome.showLogs",
+				"title": "%command.showLogs%",
+				"category": "Chrome Tab"
+			}
+		],
+		"configuration": {
+			"title": "%config.title%",
+			"properties": {
+				"marvincode.chrome.hosts": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"markdownDescription": "%config.hosts%"
+				},
+				"marvincode.chrome.executablePath": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "%config.executablePath%"
+				},
+				"marvincode.chrome.deviceScaleFactor": {
+					"type": "number",
+					"default": 0,
+					"minimum": 0,
+					"maximum": 4,
+					"markdownDescription": "%config.deviceScaleFactor%"
+				},
+				"marvincode.chrome.frameQuality": {
+					"type": "number",
+					"default": 80,
+					"minimum": 30,
+					"maximum": 100,
+					"markdownDescription": "%config.frameQuality%"
+				}
+			}
+		}
+	}
+}

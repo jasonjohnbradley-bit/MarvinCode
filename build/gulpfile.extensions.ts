@@ -72,6 +72,7 @@ const compilations = [
 	'extensions/json-language-features/client/tsconfig.json',
 	'extensions/kanban/tsconfig.json',
 	'extensions/claude-bridge/tsconfig.json',
+	'extensions/chrome-tab/tsconfig.json',
 	'extensions/langfuse/tsconfig.json',
 	'extensions/windows-vm/tsconfig.json',
 	'extensions/json-language-features/server/tsconfig.json',

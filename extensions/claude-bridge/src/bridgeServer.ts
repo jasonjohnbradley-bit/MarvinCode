@@ -6,6 +6,7 @@
 import * as fs from 'node:fs';
 import * as net from 'node:net';
 import * as vscode from 'vscode';
+import * as chrome from './chromeBrowser';
 import * as browser from './integratedBrowser';
 import {
 	TOOL_INPUT_SCHEMAS,
@@ -15,6 +16,7 @@ import {
 	type GetDirtyBufferInputT,
 	type GetDirtyBufferOutputT,
 	type GetEditorStateOutputT,
+	type ListBrowserPagesOutputT,
 	type ListDirtyBuffersOutputT,
 	type NavigateBrowserPageInputT,
 	type OpenBrowserPageInputT,
@@ -30,6 +32,11 @@ import { frame, parseFrames, Request } from './shared/wire';
 import { SimpleBrowserTracker } from './simpleBrowser';
 
 const MAX_BUFFER_BYTES = 1_000_000;
+
+/** Chrome Tab pages (`chrome:` ids) go to the chrome-tab extension, all others to the Integrated Browser. */
+function backendFor(pageId: string): typeof browser {
+	return chrome.isChromePageId(pageId) ? chrome : browser;
+}
 
 interface BridgeServerOpts {
 	output: vscode.OutputChannel;
@@ -225,22 +232,60 @@ export class BridgeServer implements vscode.Disposable {
 			case 'closeSimpleBrowser':
 				return this.opts.tracker.close((args as CloseSimpleBrowserInputT).all);
 			case 'listBrowserPages':
-				return browser.listBrowserPages();
-			case 'openBrowserPage':
-				return browser.openBrowserPage(args as OpenBrowserPageInputT);
-			case 'shareBrowserPage':
-				return browser.shareBrowserPage(args as ShareBrowserPageInputT);
-			case 'readBrowserPage':
-				return browser.readBrowserPage(args as ReadBrowserPageInputT);
-			case 'screenshotBrowserPage':
-				return browser.screenshotBrowserPage(args as ScreenshotBrowserPageInputT);
-			case 'navigateBrowserPage':
-				return browser.navigateBrowserPage(args as NavigateBrowserPageInputT);
-			case 'clickBrowserElement':
-				return browser.clickBrowserElement(args as ClickBrowserElementInputT);
-			case 'typeInBrowserPage':
-				return browser.typeInBrowserPage(args as TypeInBrowserPageInputT);
+				return this.listBrowserPages();
+			case 'openBrowserPage': {
+				const a = args as OpenBrowserPageInputT;
+				const target = { url: a.url, forceNew: a.forceNew };
+				return a.browser === 'chrome' ? chrome.openBrowserPage(target) : browser.openBrowserPage(target);
+			}
+			case 'shareBrowserPage': {
+				const a = args as ShareBrowserPageInputT;
+				return backendFor(a.pageId).shareBrowserPage(a);
+			}
+			case 'readBrowserPage': {
+				const a = args as ReadBrowserPageInputT;
+				return backendFor(a.pageId).readBrowserPage(a);
+			}
+			case 'screenshotBrowserPage': {
+				const a = args as ScreenshotBrowserPageInputT;
+				return backendFor(a.pageId).screenshotBrowserPage(a);
+			}
+			case 'navigateBrowserPage': {
+				const a = args as NavigateBrowserPageInputT;
+				return backendFor(a.pageId).navigateBrowserPage(a);
+			}
+			case 'clickBrowserElement': {
+				const a = args as ClickBrowserElementInputT;
+				return backendFor(a.pageId).clickBrowserElement(a);
+			}
+			case 'typeInBrowserPage': {
+				const a = args as TypeInBrowserPageInputT;
+				return backendFor(a.pageId).typeInBrowserPage(a);
+			}
 		}
+	}
+
+	/** Integrated Browser pages followed by Chrome Tab pages, each tagged with its browser. */
+	private async listBrowserPages(): Promise<ListBrowserPagesOutputT> {
+		const chromePagesPromise = chrome.listBrowserPages();
+		let integrated: ListBrowserPagesOutputT = { pages: [] };
+		let integratedError: Error | undefined;
+		try {
+			integrated = await browser.listBrowserPages();
+		} catch (error) {
+			integratedError = error instanceof Error ? error : new Error(String(error));
+		}
+		const chromePages = await chromePagesPromise;
+		// One backend being unavailable must not hide the other's pages.
+		if (integratedError && chromePages.pages.length === 0) {
+			throw integratedError;
+		}
+		return {
+			pages: [
+				...integrated.pages.map(p => ({ ...p, browser: 'integrated' as const })),
+				...chromePages.pages.map(p => ({ ...p, browser: 'chrome' as const })),
+			],
+		};
 	}
 
 	private getEditorState(): GetEditorStateOutputT {

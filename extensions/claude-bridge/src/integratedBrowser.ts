@@ -14,7 +14,6 @@ import type {
 	ListBrowserPagesOutputT,
 	NavigateBrowserPageInputT,
 	NavigateBrowserPageOutputT,
-	OpenBrowserPageInputT,
 	OpenBrowserPageOutputT,
 	ReadBrowserPageInputT,
 	ReadBrowserPageOutputT,
@@ -37,7 +36,7 @@ export function listBrowserPages(): Promise<ListBrowserPagesOutputT> {
 	return run('marvincode.browser.listPages');
 }
 
-export function openBrowserPage(args: OpenBrowserPageInputT): Promise<OpenBrowserPageOutputT> {
+export function openBrowserPage(args: { url: string; forceNew: boolean }): Promise<OpenBrowserPageOutputT> {
 	return run('marvincode.browser.open', args);
 }
 

@@ -9,6 +9,7 @@ Every upstream (Microsoft) file this fork modifies is listed here, with how to r
 - `extensions/kanban/`
 - `extensions/agent-runner/`
 - `extensions/claude-bridge/`
+- `extensions/chrome-tab/` (real headless Google Chrome shown in an editor tab over a CDP screencast — passes Entra device-based Conditional Access that the Integrated Browser cannot; backs the bridge's `chrome:` pages)
 - `extensions/langfuse/`
 - `extensions/windows-vm/` (Windows VM desktop via local Guacamole RDP gateway in the Integrated Browser)
 - `extensions/theme-token-effort/`
@@ -21,8 +22,8 @@ Every upstream (Microsoft) file this fork modifies is listed here, with how to r
 | # | File | What | Re-apply note |
 |---|------|------|---------------|
 | 1 | `product.json` | Token Effort branding: nameShort/nameLong and win32 display names are "Token Effort"; internal identity stays `marvincode` (applicationName, dataFolderName, sharedDataFolderName, server/tunnel names, mutexes, darwinBundleIdentifier, urlProtocol, fresh win32 GUIDs) so existing profiles/data keep loading. Also adds `extensionsGallery` pointing at Open VSX (open-vsx.org) plus its `linkProtectionTrustedDomains` entry — OSS builds ship no gallery, so extension search/install is dead without it | On conflict, keep our values for all identity fields; take upstream for everything else (builtInExtensions versions etc.) |
-| 2 | `build/gulpfile.extensions.ts` | Added `extensions/kanban/tsconfig.json` (and later `extensions/agent-runner/tsconfig.json`, `extensions/claude-bridge/tsconfig.json`, `extensions/langfuse/tsconfig.json` and `extensions/windows-vm/tsconfig.json`) to the hardcoded `compilations` array | Re-add the fork lines to the array, alphabetical position is cosmetic |
-| 3 | `.eslint-allowed-javascript-files` | Added `extensions/kanban/media/board.js` (hand-written webview script, same pattern as media-preview) | Re-add the one line, alphabetical position is cosmetic |
+| 2 | `build/gulpfile.extensions.ts` | Added `extensions/kanban/tsconfig.json` (and later `extensions/agent-runner/tsconfig.json`, `extensions/claude-bridge/tsconfig.json`, `extensions/langfuse/tsconfig.json`, `extensions/windows-vm/tsconfig.json` and `extensions/chrome-tab/tsconfig.json`) to the hardcoded `compilations` array | Re-add the fork lines to the array, alphabetical position is cosmetic |
+| 3 | `.eslint-allowed-javascript-files` | Added `extensions/kanban/media/board.js` and `extensions/chrome-tab/media/viewer.js` (hand-written webview scripts, same pattern as media-preview) | Re-add the lines, alphabetical position is cosmetic |
 | 4 | `src/vs/code/electron-main/app.ts` | agentGraph: service registration (`services.set`) + IPC channel registration, both in `// FORK:agentGraph` blocks | Re-add the two marked blocks next to the Encryption service/channel lines |
 | 5 | `src/vs/workbench/workbench.desktop.main.ts` | Two side-effect imports (`contrib/agentGraph`, `contrib/marvinBridge`) in one `// FORK:agentGraph` block | Re-add the marked imports at the end of the contrib imports |
 | 6 | `build/filters.ts` | Hygiene exclusions for `contrib/agentGraph/.../media/**` (indentation) and `media/vendor/**` (copyright) in `// FORK:agentGraph` blocks | Re-add the two marked globs |
