@@ -5,6 +5,7 @@
 
 import * as vscode from 'vscode';
 import type { Page } from 'playwright-core';
+import type { BookmarkStore } from './bookmarks';
 import type { ChromeHost } from './chromeHost';
 import { ChromeTab, ChromeTabOptions } from './chromeTab';
 
@@ -20,6 +21,7 @@ export class ChromeTabs implements vscode.Disposable {
 		private readonly _host: ChromeHost,
 		private readonly _extensionUri: vscode.Uri,
 		private readonly _log: vscode.LogOutputChannel,
+		private readonly _bookmarks: BookmarkStore,
 	) {
 		this._disposables.push(_host.onDidOpenPopup(page => {
 			// Let our own open() register its page first; give popups their own tab.
@@ -33,7 +35,7 @@ export class ChromeTabs implements vscode.Disposable {
 
 	open(options: ChromeTabOptions): ChromeTab {
 		const id = `${CHROME_PAGE_PREFIX}${this._next++}`;
-		const tab = new ChromeTab(id, this._host, this._extensionUri, this._log, options);
+		const tab = new ChromeTab(id, this._host, this._extensionUri, this._log, this._bookmarks, options);
 		this._tabs.set(id, tab);
 		tab.onDidDispose(() => this._tabs.delete(id));
 		return tab;

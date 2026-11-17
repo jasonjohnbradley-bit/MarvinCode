@@ -52,15 +52,101 @@ body {
 }
 
 #nav {
+	position: relative;
 	flex: 1;
 	margin: 0;
+}
+
+/* The bookmark star sits at the right end of the address bar, as in Chrome. */
+#toolbar #star {
+	position: absolute;
+	top: 0;
+	right: 1px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	padding: 0;
+	color: var(--vscode-descriptionForeground);
+}
+
+#star .full,
+#star.on .empty {
+	display: none;
+}
+
+#star.on .full {
+	display: block;
+}
+
+#toolbar #star.on {
+	color: var(--vscode-textLink-foreground);
+}
+
+#bookmarks {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	height: 28px;
+	padding: 0 6px;
+	border-bottom: 1px solid var(--vscode-editorGroupHeader-tabsBorder, var(--vscode-panel-border));
+	background: var(--vscode-editorGroupHeader-tabsBackground);
+	flex: none;
+}
+
+#bookmarks[hidden],
+#bm-more[hidden] {
+	display: none;
+}
+
+#bm-list {
+	display: flex;
+	gap: 2px;
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.bm,
+#bm-more {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+	max-width: 180px;
+	height: 24px;
+	padding: 0 8px;
+	border: none;
+	border-radius: 12px;
+	background: transparent;
+	color: var(--vscode-foreground);
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.bm:hover,
+#bm-more:hover {
+	background: var(--vscode-toolbar-hoverBackground);
+}
+
+.bm img {
+	width: 16px;
+	height: 16px;
+	flex: none;
+}
+
+.bm span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 #url {
 	box-sizing: border-box;
 	width: 100%;
 	height: 24px;
-	padding: 0 8px;
+	padding: 0 28px 0 8px;
 	border: 1px solid var(--vscode-input-border, transparent);
 	border-radius: 4px;
 	background: var(--vscode-input-background);
@@ -73,21 +159,31 @@ body {
 	outline-offset: -1px;
 }
 
-#shared {
-	padding: 2px 4px 2px 8px;
-	border-radius: 4px;
-	background: var(--vscode-badge-background);
-	color: var(--vscode-badge-foreground);
-	font-size: 11px;
+#toolbar #share {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 5px;
+	color: var(--vscode-descriptionForeground);
 	white-space: nowrap;
 }
 
-#shared #unshare {
-	height: 18px;
-	min-width: 0;
-	padding: 0 6px;
-	font-size: 11px;
-	color: inherit;
+#share .label {
+	display: none;
+	font-size: 12px;
+}
+
+body.shared #toolbar #share {
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+}
+
+body.shared #toolbar #share:hover {
+	background: var(--vscode-button-hoverBackground);
+}
+
+body.shared #share .label {
+	display: inline;
 }
 
 #stage {
@@ -95,6 +191,32 @@ body {
 	flex: 1;
 	overflow: hidden;
 	background: #fff;
+}
+
+/* Shows around a frame while the page catches up with a resize. */
+body.dark #stage {
+	background: #202124;
+}
+
+#toolbar #dark {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	color: var(--vscode-descriptionForeground);
+}
+
+#toolbar #dark[aria-pressed="true"] {
+	color: var(--vscode-textLink-foreground);
+}
+
+/* Like the Integrated Browser: a shared page is framed so it is obvious agents can act in it. */
+body.shared #stage::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border: 2px solid var(--vscode-button-background);
+	pointer-events: none;
 }
 
 #screen {

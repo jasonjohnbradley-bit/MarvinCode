@@ -66,6 +66,47 @@ async function settle(page: Page): Promise<void> {
 	await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => undefined);
 }
 
+// Evaluated in each frame as a string: the extension compiles without the DOM lib.
+const PASSWORD_VALUES = `[...document.querySelectorAll('input[type=password]')].map(i => i.value).filter(v => v)`;
+const MASK = '••••••••';
+
+async function passwordValues(page: Page): Promise<Set<string>> {
+	const values = new Set<string>();
+	for (const frame of page.frames()) {
+		const found = await frame.evaluate(PASSWORD_VALUES).catch(() => []) as string[];
+		for (const value of found) {
+			values.add(value);
+		}
+	}
+	return values;
+}
+
+/**
+ * The aria snapshot prints a textbox's value even for a password field, so a page
+ * shared after the user typed a password would hand it to the agent. Mask the value
+ * of any textbox line that holds the current value of a password field.
+ */
+function maskPasswords(snapshot: string, secrets: ReadonlySet<string>): string {
+	if (secrets.size === 0) {
+		return snapshot;
+	}
+	return snapshot.split('\n').map(line => {
+		const match = /^(?<head>\s*- textbox\b.*\[ref=[^\]]+\][^:]*: )(?<value>.*)$/.exec(line);
+		if (!match?.groups) {
+			return line;
+		}
+		let value = match.groups.value;
+		if (/^".*"$/.test(value)) {
+			try {
+				value = JSON.parse(value);
+			} catch {
+				// Not a JSON-quoted value; compare it as printed.
+			}
+		}
+		return secrets.has(value) ? `${match.groups.head}${MASK}` : line;
+	}).join('\n');
+}
+
 async function summary(tab: ChromeTab): Promise<string> {
 	const page = await tab.page();
 	const url = page.url();
@@ -76,7 +117,8 @@ async function summary(tab: ChromeTab): Promise<string> {
 		return blocked;
 	}
 	const title = await page.title().catch(() => '');
-	const snapshot = await (page as unknown as AiSnapshotPage).ariaSnapshot({ mode: 'ai' }).catch(() => undefined);
+	const raw = await (page as unknown as AiSnapshotPage).ariaSnapshot({ mode: 'ai' }).catch(() => undefined);
+	const snapshot = raw === undefined ? undefined : maskPasswords(raw, await passwordValues(page));
 	return [
 		...(title ? [`Page Title: ${title}`] : []),
 		`URL: ${url}`,
@@ -96,7 +138,7 @@ export function registerAgentCommands(context: vscode.ExtensionContext, tabs: Ch
 	const requireShared = (pageId: string): ChromeTab => {
 		const tab = resolve(pageId);
 		if (!tab.shared) {
-			throw new Error(`Chrome page '${pageId}' is not shared with agents. Call shareBrowserPage first; the user will be asked.`);
+			throw new Error(`Chrome page '${pageId}' is not shared with agents. Ask the user to click Share with Agent in the Chrome Tab toolbar, or call shareBrowserPage (the user will be asked).`);
 		}
 		return tab;
 	};
@@ -140,18 +182,7 @@ export function registerAgentCommands(context: vscode.ExtensionContext, tabs: Ch
 		}),
 
 		vscode.commands.registerCommand('marvincode.chrome.share', async (args: { pageId: string }) => {
-			const tab = resolve(args.pageId);
-			if (tab.shared) {
-				return { shared: true };
-			}
-			tab.reveal();
-			const share = vscode.l10n.t('Share');
-			const picked = await vscode.window.showWarningMessage(
-				vscode.l10n.t('Share this Chrome page with agents?'),
-				{ modal: true, detail: vscode.l10n.t('{0}\n{1}\n\nAgents will be able to read and control it. It is signed in as you (Caseware device sign-in).', tab.title, tab.url) },
-				share);
-			tab.shared = picked === share;
-			return { shared: tab.shared };
+			return { shared: await resolve(args.pageId).requestShare(true) };
 		}),
 
 		vscode.commands.registerCommand('marvincode.chrome.read', async (args: { pageId: string }) => {

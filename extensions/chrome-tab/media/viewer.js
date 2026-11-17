@@ -21,20 +21,44 @@
 	const urlInput = /** @type {HTMLInputElement} */ ($('url'));
 	const back = /** @type {HTMLButtonElement} */ ($('back'));
 	const forward = /** @type {HTMLButtonElement} */ ($('forward'));
-	const shared = $('shared');
+	const share = /** @type {HTMLButtonElement} */ ($('share'));
+	const dark = /** @type {HTMLButtonElement} */ ($('dark'));
+	const star = /** @type {HTMLButtonElement} */ ($('star'));
+	const bookmarkBar = $('bookmarks');
+	const bookmarkList = $('bm-list');
+	const bookmarkMore = $('bm-more');
 
-	const dpr = window.devicePixelRatio || 1;
+	let dpr = window.devicePixelRatio || 1;
 	let cssW = 0;
 	let cssH = 0;
 	/** @type {HTMLImageElement | undefined} */
 	let lastImage;
+	// The page size, in CSS pixels, the last frame shows.
+	let lastImageW = 0;
+	let lastImageH = 0;
 
 	/** @param {unknown} message */
 	const post = message => vscode.postMessage(message);
 
 	// --- Layout ---
 
+	// Frames are drawn at the page size they show, from the top left, never
+	// stretched to the stage: canvas pixels stay page pixels (input relies on it),
+	// and while the stage is resized the old frame shows edged in white until
+	// Chrome catches up, instead of distorted.
+	function draw() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		if (!lastImage) {
+			return;
+		}
+		const fits = Math.abs(lastImageW - cssW) <= 1 && Math.abs(lastImageH - cssH) <= 1;
+		const w = fits ? canvas.width : Math.round(lastImageW * dpr);
+		const h = fits ? canvas.height : Math.round(lastImageH * dpr);
+		ctx.drawImage(lastImage, 0, 0, w, h);
+	}
+
 	function measure() {
+		dpr = window.devicePixelRatio || 1;
 		const r = stage.getBoundingClientRect();
 		cssW = Math.max(100, Math.floor(r.width));
 		cssH = Math.max(100, Math.floor(r.height));
@@ -42,10 +66,17 @@
 		canvas.style.height = `${cssH}px`;
 		canvas.width = Math.round(cssW * dpr);
 		canvas.height = Math.round(cssH * dpr);
-		if (lastImage) {
-			ctx.drawImage(lastImage, 0, 0, canvas.width, canvas.height);
-		}
+		draw();
 	}
+
+	// Window zoom or a display with another scale changes devicePixelRatio.
+	function watchPixelRatio() {
+		matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener('change', () => {
+			measure();
+			watchPixelRatio();
+		}, { once: true });
+	}
+	watchPixelRatio();
 
 	/** @type {ReturnType<typeof setTimeout> | undefined} */
 	let resizeTimer;
@@ -60,16 +91,124 @@
 		resizeTimer = setTimeout(() => post({ type: 'resize', width: cssW, height: cssH }), 80);
 	}).observe(stage);
 
+	/** @param {boolean} value */
+	function showShared(value) {
+		document.body.classList.toggle('shared', value);
+		share.setAttribute('aria-pressed', String(value));
+		const title = (value ? share.dataset.unshare : share.dataset.share) || '';
+		share.title = title;
+		share.setAttribute('aria-label', title);
+	}
+
+	/** @param {boolean} value */
+	function showDark(value) {
+		document.body.classList.toggle('dark', value);
+		dark.setAttribute('aria-pressed', String(value));
+		const title = (value ? dark.dataset.on : dark.dataset.off) || '';
+		dark.title = title;
+		dark.setAttribute('aria-label', title);
+	}
+
+	// --- Bookmarks ---
+
+	// Chrome's default favicon for sites without one: a grey globe (codicon `globe`).
+	const DEFAULT_ICON = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="#8a8a8a"><path d="M8 1C4.141 1 1 4.141 1 8C1 11.859 4.141 15 8 15C11.859 15 15 11.859 15 8C15 4.141 11.859 1 8 1ZM8 14C7.422 14 6.686 12.906 6.288 11H9.713C9.315 12.906 8.579 14 8.001 14H8ZM6.121 10C6.044 9.392 6 8.723 6 8C6 7.277 6.044 6.608 6.121 6H9.878C9.955 6.608 9.999 7.277 9.999 8C9.999 8.723 9.955 9.392 9.878 10H6.121ZM2 8C2 7.299 2.121 6.626 2.343 6H5.121C5.041 6.656 5 7.332 5 8C5 8.668 5.041 9.344 5.121 10H2.343C2.121 9.374 2 8.701 2 8ZM8 2C8.578 2 9.314 3.094 9.712 5H6.287C6.685 3.094 7.422 2 8 2ZM10.879 6H13.657C13.879 6.626 14 7.299 14 8C14 8.701 13.879 9.374 13.657 10H10.879C10.959 9.344 11 8.668 11 8C11 7.332 10.959 6.656 10.879 6ZM13.195 5H10.722C10.516 3.938 10.199 2.98 9.775 2.268C11.228 2.719 12.446 3.707 13.195 5ZM6.226 2.268C5.802 2.98 5.484 3.938 5.279 5H2.806C3.556 3.707 4.774 2.718 6.226 2.268ZM2.805 11H5.278C5.484 12.062 5.801 13.02 6.225 13.732C4.772 13.281 3.554 12.293 2.805 11ZM9.774 13.732C10.198 13.02 10.516 12.062 10.721 11H13.194C12.444 12.293 11.226 13.282 9.774 13.732Z"/></svg>');
+
+	/** @type {{ id: string, title: string, url: string, icon?: string }[]} */
+	let bookmarks = [];
+	let currentUrl = '';
+
+	function renderStar() {
+		const on = bookmarks.some(b => b.url === currentUrl);
+		star.classList.toggle('on', on);
+		star.setAttribute('aria-pressed', String(on));
+		star.title = (on ? star.dataset.edit : star.dataset.add) || '';
+		star.setAttribute('aria-label', star.title);
+		star.disabled = !/^https?:/.test(currentUrl);
+	}
+
+	function renderBookmarks() {
+		bookmarkList.replaceChildren(...bookmarks.map(b => {
+			const item = document.createElement('button');
+			item.className = 'bm';
+			item.dataset.id = b.id;
+			item.title = `${b.title}\n${b.url}`;
+			const icon = document.createElement('img');
+			icon.alt = '';
+			icon.src = b.icon || DEFAULT_ICON;
+			icon.addEventListener('error', () => { icon.src = DEFAULT_ICON; }, { once: true });
+			const label = document.createElement('span');
+			label.textContent = b.title;
+			item.append(icon, label);
+			return item;
+		}));
+		bookmarkBar.hidden = bookmarks.length === 0;
+		updateOverflow();
+		renderStar();
+	}
+
+	function updateOverflow() {
+		bookmarkMore.hidden = bookmarkList.scrollWidth <= bookmarkList.clientWidth;
+	}
+	new ResizeObserver(updateOverflow).observe(bookmarkBar);
+
+	/** @param {Event} e */
+	const bookmarkId = e => /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('.bm'))?.dataset.id;
+	bookmarkList.addEventListener('click', e => {
+		const id = bookmarkId(e);
+		if (id) {
+			post({ type: 'openBookmark', id, newTab: e.metaKey || e.ctrlKey });
+		}
+	});
+	bookmarkList.addEventListener('auxclick', e => {
+		const id = bookmarkId(e);
+		if (id && e.button === 1) {
+			post({ type: 'openBookmark', id, newTab: true });
+		}
+	});
+	bookmarkList.addEventListener('contextmenu', e => {
+		e.preventDefault();
+		const id = bookmarkId(e);
+		if (id) {
+			post({ type: 'bookmarkMenu', id });
+		}
+	});
+	bookmarkMore.addEventListener('click', () => post({ type: 'bookmarksOverflow' }));
+	star.addEventListener('click', () => post({ type: 'toggleBookmark' }));
+
 	// --- Host messages ---
+
+	// Once connected, the host posts at least every 1.5 s (state, or a ping while
+	// hidden). Silence means the extension host went away: it restarted, and VS Code
+	// does not hand existing panels to the new one. Say so rather than show a page
+	// that looks alive but ignores input.
+	let lastHostMessage = 0;
+	let disconnected = false;
+	setInterval(() => {
+		if (!disconnected && lastHostMessage && Date.now() - lastHostMessage > 10000) {
+			disconnected = true;
+			status.textContent = document.body.dataset.disconnected || '';
+			status.hidden = false;
+		}
+	}, 2000);
 
 	window.addEventListener('message', event => {
 		const m = event.data;
+		if (lastHostMessage || m.type === 'state') {
+			lastHostMessage = Date.now();
+		}
+		if (disconnected) {
+			disconnected = false;
+			status.hidden = true;
+		}
 		switch (m.type) {
 			case 'frame': {
 				const image = new Image();
 				image.onload = () => {
 					lastImage = image;
-					ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+					lastImageW = m.width || cssW;
+					lastImageH = m.height || cssH;
+					draw();
 					status.hidden = true;
 					post({ type: 'drawn' });
 				};
@@ -85,7 +224,13 @@
 				}
 				back.disabled = !m.canGoBack;
 				forward.disabled = !m.canGoForward;
-				shared.hidden = !m.shared;
+				showShared(!!m.shared);
+				currentUrl = m.url;
+				renderStar();
+				break;
+			case 'bookmarks':
+				bookmarks = m.items;
+				renderBookmarks();
 				break;
 			case 'cursor':
 				canvas.style.cursor = m.value;
@@ -93,6 +238,12 @@
 			case 'status':
 				status.textContent = m.text;
 				status.hidden = !m.text;
+				break;
+			case 'focusAddressBar':
+				urlInput.focus();
+				break;
+			case 'colorScheme':
+				showDark(!!m.dark);
 				break;
 		}
 	});
@@ -230,12 +381,15 @@
 		e.preventDefault();
 		const printable = e.key.length === 1 && !e.ctrlKey && !e.metaKey;
 		const text = printable ? e.key : e.key === 'Enter' ? '\r' : undefined;
+		// No nativeVirtualKeyCode: on macOS Chrome reads it as a Mac key code, and a
+		// Windows code there turns keys the page leaves alone (Escape, Page Up/Down,
+		// F-keys) into Chrome menu shortcuts that open chrome://settings/help.
 		post({
 			type: 'key',
 			event: {
 				type: text ? 'keyDown' : 'rawKeyDown',
 				key: e.key, code: e.code,
-				windowsVirtualKeyCode: e.keyCode, nativeVirtualKeyCode: e.keyCode,
+				windowsVirtualKeyCode: e.keyCode,
 				text, unmodifiedText: text,
 				autoRepeat: e.repeat, location: e.location, isKeypad: e.location === 3,
 				modifiers: modifiers(e),
@@ -247,7 +401,7 @@
 		if (composing(e) || (e.metaKey && !EDIT_COMMANDS[shortcut(e)])) {
 			return;
 		}
-		post({ type: 'key', event: { type: 'keyUp', key: e.key, code: e.code, windowsVirtualKeyCode: e.keyCode, nativeVirtualKeyCode: e.keyCode, location: e.location, modifiers: modifiers(e) } });
+		post({ type: 'key', event: { type: 'keyUp', key: e.key, code: e.code, windowsVirtualKeyCode: e.keyCode, location: e.location, modifiers: modifiers(e) } });
 	});
 	let composingText = false;
 	sink.addEventListener('compositionstart', () => { composingText = true; });
@@ -278,7 +432,8 @@
 	forward.addEventListener('click', () => post({ type: 'history', action: 'forward' }));
 	$('reload').addEventListener('click', () => post({ type: 'history', action: 'reload' }));
 	$('external').addEventListener('click', () => post({ type: 'openExternal' }));
-	$('unshare').addEventListener('click', () => post({ type: 'stopSharing' }));
+	share.addEventListener('click', () => post({ type: 'toggleShare' }));
+	dark.addEventListener('click', () => post({ type: 'toggleDarkMode' }));
 	$('nav').addEventListener('submit', e => {
 		e.preventDefault();
 		if (urlInput.value.trim()) {

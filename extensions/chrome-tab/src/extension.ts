@@ -5,8 +5,11 @@
 
 import * as vscode from 'vscode';
 import { registerAgentCommands } from './agentCommands';
+import { BookmarkStore } from './bookmarks';
 import { ChromeHost } from './chromeHost';
 import { CHROME_TAB_VIEW_TYPE } from './chromeTab';
+import { toggleDarkMode } from './colorScheme';
+import { registerLauncher } from './launcher';
 import { hostMatchesAny } from './networkFilter';
 import { ChromeTabs } from './tabs';
 
@@ -15,12 +18,21 @@ let host: ChromeHost | undefined;
 export function activate(context: vscode.ExtensionContext): void {
 	const log = vscode.window.createOutputChannel('Chrome Tab', { log: true });
 	host = new ChromeHost(vscode.Uri.joinPath(context.globalStorageUri, 'chrome').fsPath, log);
-	const tabs = new ChromeTabs(host, context.extensionUri, log);
-	context.subscriptions.push(log, host, tabs);
+	const bookmarks = new BookmarkStore(context.globalState);
+	const tabs = new ChromeTabs(host, context.extensionUri, log, bookmarks);
+	context.subscriptions.push(log, host, tabs, bookmarks);
 
 	registerAgentCommands(context, tabs);
 
 	context.subscriptions.push(
+		registerLauncher('marvincode.chrome.newTab'),
+
+		vscode.commands.registerCommand('marvincode.chrome.newTab', () => {
+			tabs.open({ focusAddressBar: true });
+		}),
+
+		vscode.commands.registerCommand('marvincode.chrome.toggleDarkMode', () => toggleDarkMode()),
+
 		vscode.commands.registerCommand('marvincode.chrome.openUrl', async (url?: string) => {
 			if (typeof url !== 'string' || !url) {
 				const clip = (await vscode.env.clipboard.readText()).trim();

@@ -1,6 +1,16 @@
 {
 	"displayName": "Chrome Tab",
 	"description": "Shows real Google Chrome (headless, managed, device-SSO capable) inside an editor tab and exposes it to agents.",
+	"viewContainer.chromeTab": "Chrome",
+	"view.launcher": "Chrome",
+	"welcome.launcher": "Real Google Chrome in an editor tab, signed in with this Mac's Caseware device identity. Pages can be shared with agents.\n[New Chrome Tab](command:marvincode.chrome.newTab)\n[Open URL…](command:marvincode.chrome.openUrl)",
+	"command.newTab": "New Chrome Tab",
+	"command.toggleDarkMode": "Toggle Dark Mode",
+	"config.colorScheme": "Whether Chrome Tabs ask sites for their dark theme (the `prefers-color-scheme` media feature). The moon button in the Chrome Tab toolbar switches between `light` and `dark`.",
+	"config.colorScheme.light": "Sites render light.",
+	"config.colorScheme.dark": "Sites that have a dark theme use it.",
+	"config.colorScheme.theme": "Dark when the color theme is dark or high contrast, light otherwise.",
+	"config.forceDark": "In dark mode, also darken sites that have no dark theme (Chrome's Auto Dark Mode). Colors and images on those sites can look off.",
 	"command.openUrl": "Open URL in Chrome Tab",
 	"command.openActiveBrowserPage": "Move Integrated Browser Page to Chrome Tab",
 	"command.restart": "Restart Chrome",
@@ -9,5 +19,6 @@
 	"config.hosts": "Hosts whose links open in a Chrome Tab instead of the external browser, e.g. `*.sharepoint.com`, `*.office.com`, `myapps.microsoft.com`. Use this for sites behind Microsoft device-based Conditional Access, which the Integrated Browser cannot pass.",
 	"config.executablePath": "Path to the Chrome binary. Leave empty to use the installed Google Chrome.",
 	"config.deviceScaleFactor": "Pixel density Chrome renders at. `0` uses the display density of the first Chrome Tab (2 on Retina). Takes effect after **Chrome Tab: Restart Chrome**.",
-	"config.frameQuality": "JPEG quality of the streamed frames (30–100). Lower values use less CPU on large or fast-changing pages."
+	"config.frameQuality": "JPEG quality of the streamed frames (30–100). Lower values use less CPU on large or fast-changing pages.",
+	"config.askBeforeSharing": "Ask before **Share with Agent** in the Chrome Tab toolbar shares a page. Turned off by **Always Share**. Requests that come from an agent always ask."
 }

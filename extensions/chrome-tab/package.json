@@ -29,7 +29,40 @@
 		}
 	},
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "chromeTab",
+					"title": "%viewContainer.chromeTab%",
+					"icon": "media/chrome-activity.svg"
+				}
+			]
+		},
+		"views": {
+			"chromeTab": [
+				{
+					"id": "marvincode.chrome.launcher",
+					"name": "%view.launcher%"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+				"view": "marvincode.chrome.launcher",
+				"contents": "%welcome.launcher%"
+			}
+		],
 		"commands": [
+			{
+				"command": "marvincode.chrome.newTab",
+				"title": "%command.newTab%",
+				"category": "Chrome Tab"
+			},
+			{
+				"command": "marvincode.chrome.toggleDarkMode",
+				"title": "%command.toggleDarkMode%",
+				"category": "Chrome Tab"
+			},
 			{
 				"command": "marvincode.chrome.openUrl",
 				"title": "%command.openUrl%",
@@ -73,6 +106,31 @@
 					"minimum": 0,
 					"maximum": 4,
 					"markdownDescription": "%config.deviceScaleFactor%"
+				},
+				"marvincode.chrome.colorScheme": {
+					"type": "string",
+					"enum": [
+						"light",
+						"dark",
+						"theme"
+					],
+					"enumDescriptions": [
+						"%config.colorScheme.light%",
+						"%config.colorScheme.dark%",
+						"%config.colorScheme.theme%"
+					],
+					"default": "light",
+					"markdownDescription": "%config.colorScheme%"
+				},
+				"marvincode.chrome.forceDark": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%config.forceDark%"
+				},
+				"marvincode.chrome.askBeforeSharing": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "%config.askBeforeSharing%"
 				},
 				"marvincode.chrome.frameQuality": {
 					"type": "number",

@@ -12,14 +12,42 @@
 // other local processes to attach to — with a dedicated profile, which Chrome
 // 136+ requires for remote debugging anyway.
 
+import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { promisify } from 'util';
 import * as vscode from 'vscode';
 import type { BrowserContext, Page } from 'playwright-core';
 import { loadPlaywright } from './playwright';
 
 const PROFILE_SLOTS = 4;
 const PROFILE_IN_USE = /ProcessSingleton|SingletonLock|profile.{0,40}(in use|locked)|existing browser session/i;
+const MAC_CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+
+/**
+ * Headless Chrome tells every site it is headless and automated ("HeadlessChrome"
+ * in the user agent, `navigator.webdriver`), and some bot protection refuses it
+ * outright (Figma's CloudFront answers 403). Chrome Tab is a person browsing, so
+ * it presents as the ordinary Chrome it is. This also hides agent-driven use from
+ * those checks; Jason chose that knowingly (2026-11-16).
+ */
+async function ordinaryChromeArgs(executablePath: string, log: vscode.LogOutputChannel): Promise<string[]> {
+	const args = ['--disable-blink-features=AutomationControlled'];
+	if (process.platform !== 'darwin') {
+		return args;
+	}
+	try {
+		const { stdout } = await promisify(execFile)(executablePath || MAC_CHROME, ['--version'], { timeout: 5000 });
+		const major = /(?<major>\d+)\.\d+/.exec(stdout)?.groups?.major;
+		if (major) {
+			// Chrome's own reduced user agent on macOS, minus "Headless".
+			args.push(`--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${major}.0.0.0 Safari/537.36`);
+		}
+	} catch (error) {
+		log.warn(`Could not read the Chrome version; keeping the headless user agent: ${error}`);
+	}
+	return args;
+}
 
 export class ChromeHost implements vscode.Disposable {
 	private _context: Promise<BrowserContext> | undefined;
@@ -94,6 +122,7 @@ export class ChromeHost implements vscode.Disposable {
 		const playwright = loadPlaywright();
 		const executablePath = vscode.workspace.getConfiguration('marvincode.chrome').get<string>('executablePath', '').trim();
 		fs.mkdirSync(this._storageDir, { recursive: true });
+		const ordinary = await ordinaryChromeArgs(executablePath, this._log);
 
 		let lastError: unknown;
 		for (let slot = 1; slot <= PROFILE_SLOTS; slot++) {
@@ -105,7 +134,7 @@ export class ChromeHost implements vscode.Disposable {
 					headless: true,
 					viewport: null,
 					acceptDownloads: true,
-					args: [`--force-device-scale-factor=${scale}`, '--window-size=1920,1200'],
+					args: [`--force-device-scale-factor=${scale}`, '--window-size=1920,1200', ...ordinary],
 				});
 				this._live = context;
 				this._scale = scale;
